@@ -1,0 +1,23 @@
+def func(computer):
+    result= computer(1,2)  提供了数据，输入的是方法
+    print(result)
+def computer(x,y):
+    return x+y
+func(computer)  输出3
+
+其中func需要一个函数作为参数传入，这个函数需要接收2个数字进行计算，计算逻辑由这个被传入函数决定，而computer函数接收两个数字
+
+lambda+传入参数（形参）：函数体（一行代码）
+
+def add(x, y):
+    return x + y
+def test_func(add):
+    result = add(1,2)
+    print(result)
+test_func(add)
+等效于
+def test_func(add):
+    result = add(1,2)
+    print(result)
+test_func(lambda x,y:x+y)也就是add_num=lambda x,y:x+y test_func(add_num)
+都输出3，但lambda定义的函数无法二次使用

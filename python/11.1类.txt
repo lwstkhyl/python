@@ -1,0 +1,64 @@
+class student:   //student为类名，由一个或多个单词组成，每个单词的首字母大写（规范）
+
+    place='abc'   直接写在类里面的变量称为类属性
+
+    def eat(self):      实例方法（是在类内定义的函数）（类外的def才叫函数）
+    print('eat')
+
+    @staticmethod
+    def method():       静态方法（用@staticmethod修饰）
+        print('staticmethod') 
+
+    @classmethod
+    def cmethod(cls):   类方法（用@classmethod修饰）
+        print('classmethod')
+
+    def __init__(self,name,age):    相当于构造函数
+        self.name=name       //self.name称为实例属性，在构造函数中进行赋值操作
+        self.age=age
+
+print(id(student))  1413531461136
+print(type(student))  <class 'type'>
+print(student)  <class '__main__.student'>
+
+
+创建对象：
+stu1=student('abc',20)        调用def __init__(self,name,age):构造函数
+输出student的地址和stu1的地址，不同，因为student是类对象（上面的定义class student），而stu1为实例对象
+stu1.eat()  输出eat，对象名.方法名 等价于student.eat(stu1)  类名.方法名（对象名）
+print(stu1.age)  输出20
+print(stu1.name)  输出abc
+
+类属性：类定义中place='abc'
+stu1=student('abc',20)
+print(student.place)  
+print(stu1.place)  都输出abc
+
+student.place='ab'
+print(student.place)
+print(stu1.place)  都输出ab
+
+stu1.place='abcd'
+print(student.place) 输出ab
+print(stu1.place)  输出abcd
+
+类方法：
+student.cmethod()  输出classmethod
+student.method()  输出staticmethod
+
+一个student类可以创建多个实例对象（name和age，每个实例对象的值可以不同）
+动态绑定属性：
+stu1=student('abc',20)     
+stu2=student('abcd',21)
+stu1.gender='female'  不用在类定义里新添加一个构造函数，直接加变量名就行
+print(stu1.gender)  输出female
+print(stu2.gender)  报错，stu2中没有gender属性
+动态绑定方法：
+def show():   在类外定义，是函数
+    print('show')
+stu1.show=show  在这被绑定到stu1上，变成实例方法（同上面类定义中的eat函数）
+stu1.show()  输出show
+stu2.show()  报错，stu2没有绑定show函数
+
+
+

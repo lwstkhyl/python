@@ -1,0 +1,88 @@
+有2份数据文件，现需要对其进行分析处理，计算每日销售额并以柱状图的形式进行展示
+1月份数据是普通文本，使用逗号分隔数据记录，每行从前到后为日期、订单号、销售额、省份
+2月份是json格式数据，每行都是一个字典，里面有名为“data”、“order_id”、“money”、“province”的元素
+为了面向对象编程，可以把数据都封装到一个类内，右键main.py所在文件夹，new一个pythonfile，名为data_define，还要再设计一个抽象类（和上面相同方法，名为file_define），定义文件读取的相关功能，并用子类实现具体功能（因为2份数据的格式不同，不能使用同一种方法）
+data_define.py:
+class record:
+    #有4种数据，设置4个变量
+    data=None
+    order_id=None
+    money=None
+    province=None
+    #每一行设为一个类对象
+    def __init__(self,data,order_id,money,province):
+        self.data=data
+        self.order_id=order_id
+        self.money=money
+        self.province=province
+    def __str__(self):#有了这个方法，就可以print一个record类，便于检测数据输入是否正确
+        return f"{self.data},{self.order_id},{self.money},{self.province}"
+
+file_define.py:
+from data_define import record
+import json
+class file_reader:#抽象类
+    file_path=None#文件路径
+    def read_data(self)->list[record]:
+        #将读到的每一条数据都转换为record对象，将这些转换完的对象都封装到list内返回即可
+        pass
+class text_file_reader(file_reader):#文本数据读取
+    def __init__(self,file_path):
+        self.file_path=file_path
+    def read_data(self) ->list[record]:
+        f=open(self.file_path,"r",encoding="UTF-8")
+        record_list:list[record]=[]
+        for line in f.readlines():#f.readlines()返回一个list，第i个元素就是第i行文本内容
+            line=line.strip()#去除每行数据结尾的\n
+            data_list=line.split(",")#以逗号进行分隔，返回一个列表，列表元素是每个逗号间的文本                          		 	    new_record=record(data_list[0],data_list[1],int(data_list[2]),data_list[3])
+            record_list.append(new_record)
+        f.close()
+        return record_list
+class json_file_reader(file_reader):#json数据读取
+    def __init__(self,file_path):
+        self.file_path=file_path
+    def read_data(self) ->list[record]:
+        f=open(self.file_path,"r",encoding="UTF-8")
+        record_list:list[record]=[]
+        for line in f.readlines():
+            data_dict=json.loads(line)	 			  	     
+            record_list.append(new_record)
+            new_record=record(data_dict["date"],data_dict["order_id"],int(data_dict["money"]),data_dict["province"])  
+        f.close()
+        return record_list
+if __name__=='__main__':#检测输入是否正确(正式运行时删去）
+    new_text_file_reader=text_file_reader("D:/python/data/2011年1月销售数据.txt")
+    new_json_file_reader=json_file_reader("D:/python/data/2011年2月销售数据JSON.txt")
+    list1=new_text_file_reader.read_data()
+    list2=new_json_file_reader.read_data()
+    for l in list1:
+        print(l)
+    for l in list2:
+        print(l)
+
+最后在main中完成数据的计算
+from file_define import file_reader,text_file_reader,json_file_reader
+from data_define import record
+from pyecharts.charts import Bar
+from pyecharts.options import *  #就是把这个options里的都导进来
+from pyecharts.globals import ThemeType
+new_text_file_reader = text_file_reader("D:/python/data/2011年1月销售数据.txt")
+new_json_file_reader = json_file_reader("D:/python/data/2011年2月销售数据JSON.txt")
+jan_data:list[record]=new_text_file_reader.read_data()
+feb_data:list[record]=new_json_file_reader.read_data()
+all_data:list[record]=jan_data+feb_data#将2个月的数据合并成1个list进行存储
+#开始计算每一天的销售额，用一个字典进行存储，日期是key，销售额是value
+data_dict={}
+for record in all_data:
+    if record.date in data_dict.keys():#字典中有该日期的数据,就累加
+        data_dict[record.date]+=record.money
+    else:#若没有就创建，用=赋值时会自动创建
+        data_dict[record.date]=record.money
+#制作图表
+bar=Bar(init_opts=InitOpts(theme=ThemeType.LIGHT))
+bar.add_xaxis(list(data_dict.keys()))
+bar.add_yaxis("销售额",list(data_dict.values()),label_opts=LabelOpts(is_show=False))
+bar.set_global_opts(
+    title_opts=TitleOpts(title="每日销售额")
+)
+bar.render("每日销售额柱状图.html")

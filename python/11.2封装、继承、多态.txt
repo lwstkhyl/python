@@ -1,0 +1,193 @@
+封装：提高程序的安全性，将数据（属性）和行为（方法）包装到类对象中，在方法内部对属性进行操作，在类对象的外部调用方法，这样无需关心方法内部的具体实现细节。在python中没有专门的修饰符用于属性的私有，若该属性不希望在类对象外部被访问，前面加__
+
+class student:
+    def __init__(self,name,age):
+        self.name=name
+        self.__age=age    //age不希望在类的外部使用
+    def show(self):
+        print(self.name,self.__age)
+
+stu=student('abc',20)  
+stu.show()  输出abc 20
+print(stu.name)  输出abc
+print(stu.__age)  报错，不能在外部访问__age  相当于age是private，而name是public
+print(stu._student__age)  可以得到20，用 _+类名+私有元素名 可以访问private
+
+
+继承：和c一样支持多继承
+
+class person(object):         不写(object)也行
+    def __init__(self,name,age):
+        self.name=name
+        self.age=age
+    def info(self):
+        print(self.name,self.age)
+class student(person):    //student类继承了person类，此时person称为父类，student为子类
+    def __init__(self,name,age,stu_num):  
+        super().__init__(name,age)   //super()表示继承父类的函数
+        self.stu_num=stu_num        这步才是给子类新的元素进行构造
+class teacher(person):
+    def __init__(self,name,age,teach_year):
+        super().__init__(name,age)
+        self.teach_year=teach_year
+
+stu=student('abc',20,'111')
+teacher1=teacher('bcd',30,10)
+stu.info()  输出abc 20   
+teacher1.info()  输出bcd 30    都是继承了person的info函数
+
+class  A:
+    pass
+class  B:
+    pass
+class C(A,B):    实现多继承
+    pass
+
+
+方法重写：
+在student类定义里：
+    def info(self):
+        super().info()  相当于直接把父类的info函数移到这来，即print(self.name,self.age)
+        print(self.stu_num)
+或者def info(self):
+         print(self.name,self.age,self.stu_num)
+
+在main中：
+stu.info() 输出abc 20  111    
+
+
+object类：是所有类的父类，因此所有类都有object类的属性和方法，使用内置函数dir()可以查看指定对象的所有属性
+class Student:
+    pass
+stu=Student()
+print(dir(stu))  输出object类的所有属性和方法
+
+object有一个__str__方法，返回对象的描述，可以对__str__（）进行重写来查看对象的信息
+class Student:
+    def __init__(self,name,age):
+        self.name=name
+        self.age=age
+    def __str__(self):
+        return '名字是{0},{1}岁'.format(self.name,self.age)
+stu=Student('abc',20)
+print(stu)  输出名字是abc,20岁    默认调用__str__（）
+若没有对__str__（）进行重写，print(stu)  输出<__main__.Student object at 0x00000211C23207C0>
+
+
+
+
+多态：就是“具有多种形态”，指的是：即便不知道一个变量所引用的对象到底是什么类型，仍然可以通过这个变量调用方法，在运行过程中根据变量所引用对象的类型，动态决定调用哪个对象中的方法
+class animal():
+    def eat(self):
+        print('eat')
+class dog(animal):
+    def eat(self):
+        print('dog eat')
+class cat(animal):
+    def eat(self):
+        print('cat eat')
+class person():
+    def eat(self):
+        print('human eat')
+def fun(obj):
+    obj.eat()
+fun(cat())  输出cat eat
+fun(dog())  输出dog eat
+fun(animal())  输出eat
+fun(person())  输出human eat
+不关心是否继承，只看是否有这个方法
+
+
+特殊属性：
+1、__dict__：获得类对象或实例对象所绑定的所有属性和方法的字典
+class  A:
+    pass
+class  B:
+    pass
+class C(A,B):
+    def __init__(self,name,age):
+        self.name=name
+        self.age=age
+x= C('ABC',20)
+print(x.__dict__)  输出{'name': 'ABC', 'age': 20}
+print(C.__dict__)  输出{'__module__': '__main__', '__init__': <function C.__init__ at 0x00000204A533CF70>, '__doc__': None}
+2、__class__：获得实例对象所属的类名
+     __bases__：获得类对象父类名组成的元组
+     __base__：只获得类对象的一个父类（这个父类是类对象第一个继承的）
+   __mro__：获得类对象的类名和所有父类 组成的元组
+   __subclasses__：获得类对象子类的列表
+print(x.__class__)  输出<class '__main__.C'>
+print(C.__bases__)  输出(<class '__main__.A'>, <class '__main__.B'>)
+print(C.__base__)  输出<class '__main__.A'>  因为class C(A,B)中A离C近
+print(C.__mro__)  输出(<class '__main__.C'>, <class '__main__.A'>, <class '__main__.B'>, <class 'object'>)
+print(A.__subclasses__())  输出[<class '__main__.C'>]
+
+特殊方法：
+1、__add__：
+class student:
+    def __init__(self,name):
+        self.name=name
+    def __add__(self,other):         不能没有这条函数，相当于运算符重载
+        return self.name+other.name         这个函数修改了+运算符的意义
+stu1=student('abc')
+stu2=student('ef')
+s=stu1+stu2
+print(s)  输出abcef
+2、__len__：
+lst=[11,22,33,44]
+print(len(lst))
+print(lst.__len__())     都输出4，是列表的长度
+在student类中加上这样的定义
+    def __len__(self):
+        return len(self.name)
+stu1=student('abc')
+print(len(stu1))   输出3，即stu1的name长度
+3、__new__
+class student:
+    def __init__(self,name,age):
+        print('__init__,self的id值为{0}'.format(id(self)))
+        self.name=name
+        self.age=age
+    def __new__(cls, *args, **kwargs):
+        print('__new__,cls的id值为{0}'.format(id(cls)))
+        obj=super().__new__(cls)
+        print('创建对象的id为{0}'.format(id(obj)))
+        return obj
+print('object的id值为{0}'.format(id(object)))
+print('student的id值为{0}'.format(id(student)))
+stu1=student('abc',20)
+print('stu1的id值为{0}'.format(id(stu1)))
+输出发现创建对象的id，__init__中self的id和stu1的id相同
+             student的id和__new__中cls的id相同
+             object和stu1的id不同
+在stu1=student('abc',20)时，会先执行student('abc',20)，此时调用__new__，把student传给cls，在__new__内又创建一个obj（以cls为参数）,是一个新对象（有新id），之后又调用__init__，将obj传给__init__中的self，在对这个self进行self.name=name self.age=age操作后再把self传给stu1(这步是通过main中的=操作）
+
+
+类的赋值：
+class cpu:
+    pass
+class disk:
+    pass
+class computer:
+    def __init__(self,cpu,disk):
+        self.cpu=cpu
+        self.disk=disk
+cpu1=cpu()
+cpu2=cpu1
+print(cpu1)   
+print(cpu2)     都输出<__main__.cpu object at 0x0000015C5F36FFD0>，且cpu1、2地址也相同，cpu1和2指向同一个对象
+
+浅拷贝：拷贝时，对象包含的子对象内容不拷贝，因此，源对象与拷贝对象会引用同一个子对象
+cpu1=cpu()
+disk1=disk()
+computer1=computer(cpu1,disk1)  赋值操作是让变量指向这个值所在内存空间（系统自动为这个值创建）
+import copy
+computer2=copy.copy(computer)   浅拷贝
+computer3=copy.deepcopy(computer)   深拷贝
+原对象改变，浅拷贝的对象也会跟着改变。浅拷贝是对原对象值的拷贝，地址还是原对象的地址。
+深拷贝是对原对象地址的拷贝，创建了一个与原对象地址不同的对象。修改原对象中的任何值，都不会改变深拷贝的对象的值。
+
+
+
+
+

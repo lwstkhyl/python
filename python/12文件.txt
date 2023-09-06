@@ -1,0 +1,78 @@
+打开文件：open(文件名，打开模式，编码格式）
+文件名：字符串形式
+打开模式：只读--r、写入--w(原有内容被删除）、追加--a等
+编码格式：一般为utf-8
+
+f=open("D:/python/shiyan.txt","r",encoding="UTF-8")
+encoding参数不是open构造函数中的第三个参数，中间省略了多个复杂参数，所以要用关键字传参
+print(type(f))  输出<class '_io.TextIOWrapper'>
+
+读取文件：
+a=f.read(10) 读取文件中的前10个字节，若不给10这个参数，就全读取
+print(a)
+
+lines=f.readlines()
+print(lines)  输出['123456789\n', 'abcd']  以行为单位，把每行内容都转化为列表中的一个元素，回车换行用\n表示
+
+line1=f.readline() 一次读取一行
+print(line1)  输出123456789
+line2=f.readline()
+print(line2)  输出abcd
+
+for line in f:   用for循环读取每行数据
+    print(line) 输出123456789  abcd
+注意：如果对同一文件连续多次读取操作，第二次读取会从第一次的末尾开始读，比如第一次读了前10个，第二次仍然read（10），就会读取实际中第10-20个字符
+
+最后用f.close()关闭文件
+
+另一种文件打开方法：
+with open ("D:/python/shiyan.txt","r",encoding="UTF-8")  as f:
+    for line in f:
+        print(line)
+该方法可以自动关闭文件
+
+统计给定单词的出现次数：
+1.把所有内容读取成一个字符串，用字符串的count(”给定单词“）操作直接统计
+f=open("D:/python/shiyan.txt","r",encoding="UTF-8")
+content=f.read()
+count = content.count("1")
+print(f"1出现了{count}次")
+f.close()
+2.按照空格进行切分，把每个单词于给定单词进行比较
+f=open("D:/python/shiyan.txt","r",encoding="UTF-8")
+for line in f:
+    line=line.strip()  去除每行单词开头和结尾的空格以及换行符，若没有，切分完成后每行的最后一个单词后面就会带一个\n影响判断
+    words=line.split(" ") 以空格为分界线进行切分
+    for word in words:
+        if word=="1":
+            count+=1
+print(f"1出现了{count}次")
+f.close()
+
+写入文件：
+f.write("123")  直接调用write时，内容并未真正写入文件，而是积攒在程序的内存中，称为缓冲区
+内容刷新：f.flush()  此时内容才真正写入文件
+这样做是为了避免频繁操作硬盘，导致效率下降（积攒很多后一次性写入效率更高）
+
+f=open("D:/python/shiyan.txt","w",encoding="UTF-8") //w模式：覆盖写入（清空原文件）、若文件不存在就新创建一个
+f.write("123")  
+f.flush() 
+f.close()   这个close会内置flush的功能，若有close就无需flush
+
+a模式：追加写入（原文件不清空）、文件不存在时也会自动创建
+f.write("\n123")  换行输入
+
+
+文件的备份案例：有一份文件bill.txt记录了一次实验的时间、结果以及是否是测试实验，是否测试标记在每行数据的末尾（第5段字符），每项数据间用逗号进行分隔。现在要将文件写出到bill.txt.bak文件作为备份，同时将标记为测试的数据行丢弃
+思路：open和r模式打开一个文件对象并读取文件，再用open和w模式打开另一个文件用于写出，用for循环检测是否是测试，如果不是就写出，最后将两个文件关闭。
+fr=open("D:/python/bill.txt","r",encoding="UTF-8")
+fw=open("D:/python/bill.txt.bak","w",encoding="UTF-8")
+#使用“w”是因为写出的内容在内存中，还没到磁盘中，可以在循环中追加写入（w模式写入内存中是不会覆盖的，只有写入文件中才会覆盖原有文件），当然用a模式也行
+for line in fr :
+    line=line.strip()  #去除换行符
+    if line.split("，")[4]=="测试": #line.split("，")是一个列表，[4]表示其中的第5个元素
+        continue #直接跳出这一次循环
+    fw.write(line)
+    fw.write("\n")  #前面对line去除了换行符，这里要加上
+fr.close()
+fw.close()

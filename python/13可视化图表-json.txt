@@ -1,0 +1,40 @@
+json是一种数据交互格式，用于组织和封装数据，本质上是一个带有特定格式的字符串。是一种在各个编程语言中流通的数据格式，负责不同编程语言中的数据传递和交互
+json数据的格式可以是字典，也可以是一个元素是字典的列表
+
+import json  #导入json模块
+data=[{"name":"a","age":"18"},{"name":"b","age":"11"},{"name":"c","age":"21"}]# 新建一个字典列表
+json_str=json.dumps(data)#将字典列表转化成json字符串
+json_str=json.dumps(data,ensure_ascii=False)#原数据中若包含中文，就这样保证编码正确
+print(type(json_str))  输出<class 'str'>
+print(json_str)  输出[{"name": "a", "age": "18"}, {"name": "b", "age": "11"}, {"name": "c", "age": "21"}]
+d={"name":"d","age":"9"}#将字典转化成json字符串，操作同上
+json_str=json.dumps(d,ensure_ascii=False)
+
+s='[{"name": "a", "age": "18"}, {"name": "b", "age": "11"}, {"name": "c", "age": "21"}]'
+l=json.loads(s)  #将字符串转化成列表（字典的字符串也能同方法转化成字典）
+print(type(l))  输出<class 'list'>
+print(l)  输出[{'name': 'a', 'age': '18'}, {'name': 'b', 'age': '11'}, {'name': 'c', 'age': '21'}]
+
+
+ 可视化图表：使用pyecharts模块（按之前方法先导入）
+from pyecharts.charts import Line  #导入line功能，注意大写
+from pyecharts.options import TitleOpts,LegendOpts,ToolboxOpts, VisualMapOpts
+line=Line()#得到折线图对象
+line.add_xaxis(["a","b","c"])#添加x轴数据
+line.add_yaxis("值",[30,20,10])#添加y轴数据，第一个参数表示数据的意义
+line.set_global_opts(  #设置全局配置项
+    #注意每个参数后都有逗号
+    title_opts=TitleOpts(title="abc的值",pos_left="center",pos_bottom="1%"),
+    #设置标题,第一个参数是名称，第二个参数是设置离左边（或右边）有多远，"center"表示居中,最后一个参数是设置离底部有多远，"1%"表示图表的1%长度
+    legend_opts=LegendOpts(is_show=True),
+    #导入图例
+    toolbox_opts=ToolboxOpts(is_show=True),
+    #导入工具箱
+    visualmap_opts=VisualMapOpts(is_show=True)
+    #设置视觉映射
+    #其他的配置项可以在官网pyecharts.org找到
+)
+line.render()#生成图表
+执行之后会发现右侧文件列表中出现一个.html的网页文件，点开后右上角有一个用浏览器打开的按钮，点开后可以看到图表
+
+

@@ -1,0 +1,102 @@
+input函数:
+a=input('111')  下方先输出111，再自己输入数字字母汉字 
+之后print(a,type(a))  输出刚才输入的内容  类型为str
+
+从键盘中输入2个整数并计算之和 
+a=input('输入1个加数：')
+b=input('输入另1个加数：')
+print(int(a)+int(b))  必须要加int()，因为input默认str，+号起连接作用而不是相加
+或者
+a=input('输入1个加数：')
+a=int(a)
+b=input('输入另1个加数：')
+b=int(b)
+print(a+b)
+或者
+a=int(input('输入1个加数：'))
+b=int(input('输入另1个加数：'))
+print(a+b）
+ 
+
+基本运算符 +-*/ 在print可以直接用：
+print(1+1)  2
+print(1-1)  0
+print(2*4)  8
+print(1/2)  0.5  相当于double除法
+print(11//2)  5  取整运算 相当于 int/int
+print(11%2)  1  取模运算
+print(2**3)  8  表示2^3
+
+一正一负：
+print(9//4)  2
+print(-9//-4)  2
+print(9//-4)  -3
+print(-9//4)  -3  一正一负向下取整
+余数=被除数-除数*商   靠前的是被除数  后面的是除数  商就是上面//整除的商
+print(9%-4) -3  （9-（-4）*（-3））
+print(-9%4)  3  （-9-4*（-3））
+
+
+
+赋值运算符：从右向左执行
+a=b=c=20 链式赋值 地址相同 值相同 相当于c的引用 
++= -= *= /= //= %= 原理与c相同
+若a=20 a/=3后a变为float 类型
+
+a,b,c=20,30,40 解包赋值：右边依次给左边赋值  要求左边变量数与右边值数相同
+a,b=b,a   a,b交换值
+
+比较运算符
+a,b=20,30
+print(a>b) 输出False  反之输出True
+还可以> <= >= == !=   同c
+
+print(a is b)  若输出true，说明a,b地址相同
+若用a=10 b=10定义是true
+
+lst1=[11,22,33,44]
+lst2=[11,22,33,44]
+print(lst1==lst2)   true 
+print(lst1 is lst2)  false
+print(lst1 is not lst2)  true
+
+
+bool运算符：and、or、not、in、not in
+true and true ->true  有一个false就->false    &&
+flase or flase ->false 有一个true就->true     ||
+not false ->true    not表示取反                               ！
+
+s='abc'
+print('a' in s)  true
+print('d' in s)  false
+print('a' not in s) false
+
+
+
+位运算符
+& 按位与：把两个数转为二进制编码  比较二进制每位的01值，同为1时结果为1  将最后得到的二进制编码转为十进制输出   4&8=0
+|按位或：只要有一个数的位为1 结果就是1         4|8=12
+
+左移位：把01编码往左移 高位溢出，低位补0  往左一位 相当于*2    4<<1表示4向左1位变8
+右移位：高位补0，低位截断 向右一位相当于/2            4>>2表示4向右2位变1   
+
+
+运算符优先级：先算数运算乘除加减等，再位运算符，再比较运算符，再bool运算，最后赋值运算=
+有括号先括号里内容
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

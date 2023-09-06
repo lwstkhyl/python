@@ -1,0 +1,131 @@
+def fun():
+    global a  #global关键字代表函数中使用了外部定义的a
+    return a+10
+a=10
+print(fun())#用全局变量记录某些值，有被篡改的风险
+
+闭包：在函数嵌套的前提下，内部函数使用了外部函数的变量，并且外部函数返回了内部函数，这个使用外部函数变量的内部函数称为闭包，这样可以让一个函数即依赖外部变量又确保外部变量不能在程序中被改变
+def outer(logo):#logo是外部变量
+    def inner(msg):#msg是内部变量
+        print(f"{logo}{msg}")
+    return inner
+fn1=outer("a")#得到一个logo固定为a的inner函数，对于fn1，logo值不能被改变，改变的只有msg的值
+'''
+fn1可以看成
+def fn1(msg):
+    print(f"a:{msg}")
+'''
+fn1("1")  输出a1
+fn1("2")  输出a2
+fn2=outer("b")#想改变外部变量只能再赋值一个函数
+fn2("1")  输出b1
+fn2("2")  输出b2
+
+修改外部变量的值：nonlocal关键字
+def outer(num1):
+    def inner(num2):
+        #num1+=1会报错，应为
+        nonlocal num1
+        num1+=num2
+        return num1
+    return inner
+fn=outer(10)
+print(fn(20))  输出30
+print(fn(30))  输出60，因为num1的值在第一次调用fn函数时已经变为30，第二次调用fn函数使用的仍是原来的num1，因此闭包可以在没有全局变量的情况下实现变量的累加
+
+写一个atm函数，该函数接收两个参数，第一个参数为数额，第二个bool参数决定是取钱（false）还是存钱，函数中要求print账户余额
+def account_creat(initial_amount=0):#账户余额默认初始值为0
+    def atm(num,deposit=True):
+        nonlocal initial_amount
+        if deposit==True:
+            initial_amount+=num
+            print(f"存款：{num},账户余额：{initial_amount}")
+        else:
+            initial_amount-=num
+            print(f"取款：{num},账户余额：{initial_amount}")
+    return atm
+atm=account_creat()
+atm(100)  输出 存款：100,账户余额：100
+atm(50,deposit=False)  输出 存款：100,账户余额：100
+atm(20)  输出 取款：50,账户余额：50
+把原来的全局变量放到外函数的传参内（可以赋初始值），改变的数值放到内函数的传参内，最后在外函数中返回内函数名（不包含括号）
+
+
+装饰器：在不破坏目标函数原有的代码和功能的前提下，为目标函数增加新功能
+import random,time
+def sleep():
+    print("sleeping...")
+    time.sleep(random.randint(1,5))
+现在想把该函数改成：
+def sleep():
+    print("start sleep")
+    print("sleeping...")
+    time.sleep(random.randint(1,5))
+    print("awake")
+可以用闭包的方式：
+def sleep():
+    print("sleeping...")
+    time.sleep(random.randint(1,5))
+def outer(func):
+    def inner():
+        print("start sleep")
+        func()
+        print("awake")
+    return inner
+new_sleep=outer(sleep)
+new_sleep()  即可实现上述功能
+还可以：
+def outer(func):
+    def inner():
+        print("start sleep")
+        func()
+        print("awake")
+    return inner
+@outer  #相当于执行了sleep=outer(sleep)
+def sleep():
+    print("sleeping...")
+    time.sleep(random.randint(1,5))
+sleep()  输出的是改完后的sleep
+
+
+设计模式：是一种编程套路，比如最常见的python设计模式就是面向对象的设计模式
+单例模式：定义一个类后，在函数中可以创建多个类对象，对于这些对象它们的内存地址不同、完全独立
+class str_tool:
+    pass
+s1=str_tool()
+s2=str_tool()
+print(id(s1))
+print(id(s2))  #地址不同
+但对于某些场景，一个类仅需创建一个对象即可在各处使用，不需要创建多个，以节省内存和创建对象的时间
+创建一个新python文件里面写
+class tools:
+    pass
+tool=tools()
+再在main中写
+from str_tools import tool #导入的是已经实例化的类对象而不是类
+t1=tool
+t2=tool
+print(id(t1))
+print(id(t2))  此时地址相同，因为都是tool这个tools的实例化对象
+
+工厂模式：当需要大量创建一个类的对象的时候，从原生的使用类的构造创建对象->基于工厂提供的方法去创建对象，使大批量创建对象时候有统一的入口，易于维护；当想要修改创建时仅修改工厂类的创建方法即可
+class person:
+    pass
+class worker(person):
+    pass
+class student(person):
+    pass
+class teacher(person):
+    pass
+class person_factory:#工厂类
+    def get_person(self,p_type):
+        if p_type=="worker":
+            return worker()
+        elif p_type=="student":
+            return student()
+        else:
+            return teacher()
+pf=person_factory()
+wor=pf.get_person("worker")
+stu=pf.get_person("student")
+tea=pf.get_person("teacher")

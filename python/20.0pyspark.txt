@@ -1,0 +1,102 @@
+安装第三方包pyspark，想要使用pyspark库进行数据处理，首先需要构建一个执行环境入口对象--类sparkcontex的类对象：
+from pyspark import SparkContext,SparkConf
+conf=SparkConf().setMaster("local[*]").setAppName("test_spark_app")
+#链式调用，相当于以下三行代码，conf.setMaster和conf.setAppName的返回值均为SparkConf()类型，所以可以这么写
+#conf=SparkConf()  conf是SparkConf类的类对象
+#conf.setMaster("local[*]")
+#conf.setAppName("test_spark_app")
+sc=SparkContext(conf=conf) #sc是执行环境入口对象
+print(sc.version) #打印pyspark的运行版本
+sc.stop()#停止sc的运行即停止pyspark的运行
+
+rdd对象：分布式弹性数据集，是pyspark中数据计算的载体，可以提供数据存储、数据计算的各类方法（这些方法的返回值仍为rdd），对数据的各类计算都是基于rdd对象进行
+数据的输入：
+1、将python中对象转换为pyspark中的rdd对象
+rdd1=sc.parallelize([1,2,3,4,5])#列表
+rdd2=sc.parallelize((1,2,3,4,5))#元组
+rdd3=sc.parallelize({1,2,3,4,5})#集合
+rdd4=sc.parallelize("abc")#字符串
+rdd5=sc.parallelize({"key1":"value1","key2":"value2"})#字典
+#如果要查看rdd对象里面有什么内容，需要collec函数
+print(rdd1.collect())  
+print(rdd2.collect())
+print(rdd3.collect())   前三个rdd均输出[1, 2, 3, 4, 5]
+print(rdd4.collect())   输出['a', 'b', 'c']
+print(rdd5.collect())   输出['key1', 'key2']
+2、通过textfile函数读取本地文件，将文件中的内容赋给rdd
+rdd=sc.textFile("D:/python/data/1.txt")
+注意该语句会自动把文件内容转化成rdd型量，无论该内容是何种类型
+
+数据的计算：这些方法返回的都是rdd对象
+1、map方法：将rdd的数据一条条处理，处理逻辑基于map方法中接受的处理函数，即将rdd中的每一个元素依次传进该处理函数中
+def func(data):#接收一个参数，将这个数*10输出
+    return data*10
+rdd=sc.parallelize([1,2,3,4,5])
+rdd_new=rdd.map(func)#将rdd里面的全部数据都×10
+#也可以写成labmda表达式：rdd_new=rdd.map(lambda x:x*10)
+print(rdd_new.collect())  输出[10, 20, 30, 40, 50]
+如果想*完10再+5，可以调用两次map写成链式调用的形式：
+rdd_new=rdd.map(lambda x:x*10).map(lambda x:x+5)
+
+2、flatmap方法：会对结果进行解嵌套操作，其它同map
+rdd=sc.parallelize(["abc bc","abc ab","abc ac"])
+#想要把上述词组中的每个单词提取出来，可以通过split方法
+rdd_new=rdd.map(lambda x:x.split(" "))
+print(rdd_new.collect())  输出[['abc', 'bc'], ['abc', 'ab'], ['abc', 'ac']]
+现想只留一个最外面的列表，把里面的3个列表解除，用flatmap
+rdd_new=rdd.flatMap(lambda x:x.split(" "))
+print(rdd_new.collect())  输出['abc', 'bc', 'abc', 'ab', 'abc', 'ac']
+
+3、reducebykey方法:针对KV（二元元组，即只有两个元素的元组）型的rdd，自动按照key（二元元组中第一个元素为key，第二个为value）分组，根据自己提供的聚合逻辑（传入一个函数，该函数接收两个同类型参数，返回一个同类型的值），完成组内数据的聚合操作
+rdd=sc.parallelize([('a',1),('b',1),('a',2),('b',1),('a',3)])
+#想要把key为a的元组中的值相加，key为b的元组中的值相加
+rdd_new=rdd.reduceByKey(lambda a,b:a+b)
+print(rdd_new.collect())  输出[('b', 2), ('a', 6)]
+
+4、filter方法：过滤数据，留下想要的数据。接收一个函数，该函数接收一个参数，返回一个bool值，返回为true的数据被保留
+rdd=sc.parallelize([1,2,3,4,5])#想要保留偶数
+rdd_new=rdd.filter(lambda num: num%2==0)#如果是偶数num%2==0就是true
+print(rdd_new.collect())  输出[2, 4]
+
+5、distinct方法：对数据进行去重，返回新rdd。无需传入函数
+rdd=sc.parallelize([1,1,3,3,5])
+rdd_new=rdd.distinct()
+print(rdd_new.collect())  输出[1, 3, 5]
+
+6、sortby方法：基于自己提供的排序依据，对rdd数据进行排序
+接收三个参数：第一个参数是一个函数，该函数告知按照rdd的哪个数进行排序；第二个参数指定升序降序；第三个参数是用多少分区排序
+rdd=sc.parallelize([('a',1),('b',4),('a',2),('b',5),('a',3)])
+rdd_new=rdd.sortBy(lambda x:x[1],ascending=False,numPartitions=1)#x[1]是指元组中的第二个数据；false为降序（从大到小），true为升序
+print(rdd_new.collect())  输出[('b', 5), ('b', 4), ('a', 3), ('a', 2), ('a', 1)]
+
+
+数据输出：
+1、输出为python中的对象
+（1）collect方法返回值是一个list列表对象
+rdd=sc.parallelize([1,2,3,4,5])
+rdd_list=rdd.collect()
+print(rdd_list,type(rdd_list))  输出[1, 2, 3, 4, 5] <class 'list'>
+（2）reduce方法接收一个函数，将数据按照该函数进行聚合，返回值与函数返回值相同，该函数要求接收两个同类型参数并返回一个同类型参数
+rdd=sc.parallelize(range(1,10))#对1-10的数进行求和
+result=rdd.reduce(lambda a,b:a+b)
+print(result,type(result))  输出45 <class 'int'>
+（3）take方法取数据的前n个元素，组成一个list返回
+rdd=sc.parallelize([1,2,3,4,5])
+rdd_list=rdd.take(3)#取前三个数
+print(rdd_list,type(rdd_list))  输出[1, 2, 3] <class 'list'>
+（4）count方法计算数据内有多少个数
+rdd=sc.parallelize([1,2,3,4,6])
+result=rdd.count()
+print(result,type(result))  输出5 <class 'int'>
+
+2、输出到文件中
+rdd=sc.parallelize([1,2,3,4,5])
+rdd.saveAsTextFile("D:/python/data")
+该命令会在python文件夹下创建一个名为data的文件夹，注意在此之前python文件夹下不能存在名为data的文件夹，否则会报错
+该文件夹中有part00001-00016，说明有16个分区，用记事本打开，会发现数据随机分散在不同文件中
+现在想让它只有一个文件（分区），第一种方法是全局设置，在创建sc对象之前加上conf.set("spark.default.parallelism","1")，这种方法可以使之后创建的所有rdd对象都是一个分区
+第二种方法是在创建rdd对象时rdd=sc.parallelize([1,2,3,4,5],numSlices=1)
+
+
+
+

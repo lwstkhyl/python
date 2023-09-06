@@ -1,0 +1,194 @@
+range函数：
+第一种创建方式：r=range(10)  r是迭代器，默认从0开始，默认每个数相差1
+print(r) 输出range(0, 10)
+print(list(r)) 输出[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+第二种创建方式：r=range(2,4)  表示从2开始4结束，但不包括4
+print(list(r)) 输出[2, 3]
+
+第三种创建方式：r=range(2,10,3)  表示从2开始10结束，每个数间相差3
+print(list(r)) 输出[2, 5, 8]
+
+判断指定的整数在序列中是否存在： in  、 not in
+r=range(1,10,2)
+print(10 in r)   False
+print(9 in r)   True
+print(10 not in r)   True
+不管range对象表示的整数序列有多长，所有range对象占用的内存空间都相同
+因为只需存储start，stop和step，只有用到range对象时才计算
+
+
+while 条件表达式：
+       循环体
+a=1
+while a<10:
+    print(a)
+    a+=1     输出1 ，2 ，…………，9
+
+计算0-10之间的累加和：
+a=0
+sum=0
+while a<11:       不用大括号，靠缩进规定是否在循环体内
+   sum+=a
+   a+=1  
+print("和为：",sum)
+
+计算1-100间偶数和
+a=2
+sum=0
+while a<101:
+   sum+=a
+   a+=2
+print("和为：",sum)
+或者
+a=1
+sum=0
+while a<=100:
+   if a%2==0:    或者 if not bool(a%2):
+      sum+=a
+   a+=1
+print("和为：",sum)
+
+
+for-in循环：       相当于for(auto a:b)   
+for 自定义变量 in 可迭代对象(字符串、range序列 ：
+    循环体
+
+for item in '12345':
+   print(item)             输出1 2 3 4 5
+for item in range(10):
+   print(item)             输出1，2，…………，9
+
+如果在循环体中不需要用到自定义变量，可将自定义变量写为”_“
+for _ in range(5):
+   print("111")            输出5次111
+
+计算1-100间偶数和
+sum=0
+for item in range(1,101):
+   if item%2==0:
+      sum+=item
+print(sum)
+
+输出100-999间的水仙花数（某数个位^3+十位^3+百位^3=这个数)
+for item in range(100,999):
+    a=item
+    ge=item%10
+    item//=10
+    shi=item%10
+    item//=10
+    bai=item
+    if a==ge**3+shi**3+bai**3:
+       print(a)
+或者
+      ge=item%10
+   shi=item//10%10
+   bai=item//100
+   if ge**3+shi**3+bai**3==item:
+      print(item)
+
+
+流程控制语句break：跳出循环
+输入密码是否正确，最多输入3次
+for item in range(3):
+   pwd=input('输入：')
+   if pwd=='111':
+      print('正确')
+      break
+   else:
+      print('错误')
+或者
+a=0
+while a<3:
+   pwd=input('输入：')
+   if pwd=='111':
+      print('正确')
+      break
+   else:
+      print('错误')
+   a+=1
+
+流程控制语句continue:跳过这一次，直接进入下一次循环
+输出1-50间所有5的倍数
+for item in range(1,51):
+   if item%5==0:
+      print(item)
+或者
+for item in range(1,51):
+   if item%5!=0:
+      continue
+   print(item)
+
+
+else语句：
+1、if条件表达式不成立时执行else
+2、while和for语句没有碰到break时执行else
+输入密码是否正确，最多输入3次
+for item in range(3):
+   pwd=input('密码：')
+   if pwd=='111':
+      print('正确')
+      break
+   else:
+      print('错误')
+else:                       //整个循环中if都没执行，也就是没碰到break ，就去执行和循环并列的else
+   print('均错误')
+
+
+嵌套循环：
+输出一个三行四列的由*组成的矩形
+for i in range(1,4):   //行数，执行三次
+   for j in range(1,5):     //列数，执行4次
+      print('*',end='\t')       // end='\t' 表示不换行,输出'\t'
+   print()                  //默认换行 相当于cout<<endl;
+输出一个9行的直角三角形（第一行一个*，第二行两个*，…………，第九行9个*）
+for i in range(1,10):
+   for j in range(1,i+1):
+      print('*',end=' ')
+   print()
+
+99乘法表
+for i in range(1,10):
+   for j in range(1,i+1):
+      print(i,'*',j,'=',i*j,end='\t')
+   print()
+
+二重循环中的break和continue用于控制本层循环，不影响外层
+for i in range(5):
+   for j in range(1,11):
+      if j%2==0:
+         break
+      print(j)   输出5个1，j最开始=1时输出1次，j变为2时break，退出内层循环，外层i变为2，继续（相当于内层循环永远只执行1次）
+
+for i in range(5):
+   for j in range(1,11):
+      if j%2==0:
+         continue
+      print(j)   输出5行13579
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

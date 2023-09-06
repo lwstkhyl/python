@@ -1,0 +1,39 @@
+socket是进程之间通信的一个工具，负责进程之间的网络数据传输
+socket服务端：等待其它进程的连接，可接收发来的消息、回复消息
+socket客户端：主动连接服务端，可发送消息、接收回复
+
+服务端：
+import socket
+socket_server=socket.socket()#创建socket对象
+socket_server.bind(("localhost",8888))#传入一个二元元组，包含主机名/IP地址和需要绑定的端口
+socket_server.listen(1)#可以传入一个int值，表示可以接收的链接数量
+result=socket_server.accept()#等待客户端连接，返回值是一个二元元组
+conn=result[0]#第一个元素是客户端和服务端的链接对象
+address=result[1]#第二个元素是客户端的地址信息
+#上面三行等价于：conn,address=socket_server.accept()
+#accept方法是阻塞的方法，即等待客户端的链接，如果没有链接，就卡在这一行不向下执行了
+print(f"接收到客户端链接，信息为：{address}")
+while True:#持续接收客户端消息与服务端进行回复
+    data:str=conn.recv(1024).decode("UTF-8")#接收客户端信息。使用链接对象而非socket对象
+    #recv接收参数是缓冲区大小，一般是1024；decode方法通过UTF-8编码将字节数组对象转换为字符串对象
+    print(f"客户端发来的消息是：{data}")
+    msg=input("输入给客户端回复的消息：")
+    if msg=="exit":
+        break
+    conn.send(msg.encode("UTF-8"))
+conn.close()
+socket_server.close()
+
+在另一个py文件中写客户端
+import socket
+socket_client=socket.socket()#创建socket对象
+socket_client.connect(("localhost",8888))#连接到服务端
+while True:
+    msg = input("输入给服务端发送的消息：")
+    if msg == "exit":
+        break
+    socket_client.send(msg.encode("UTF-8"))  #发送消息
+    recv_data=socket_client.recv(1024)#设置缓冲区大小，一般为1024，recv方法与服务端相同也是阻塞的
+    print(f"服务端回复的消息是：{recv_data.decode('UTF-8')}")#'UTF-8'用单引号因为它在双引号内
+socket_client.close()
+写完后把运行由“main”设为“当前文件”，先在服务端文件中点运行，再在客户端文件中点运行，之后再在客户端界面输入给服务端发送的消息，此时切回服务端，就可以看到客户端发来的消息，并可以给客户端回复，依此类推，两个端都输入exit时程序结束

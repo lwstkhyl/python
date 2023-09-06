@@ -1,0 +1,117 @@
+通过bar构建基础柱状图：
+from pyecharts.charts import Bar
+from pyecharts.options import LabelOpts
+bar=Bar()
+bar.add_xaxis(["中国","美国","英国"])#添加x轴数据
+bar.add_yaxis("GDP",[30,20,10],label_opts=LabelOpts(position="right"))#添加y轴数据，第一个参数为y轴数据名称,最后一个参数调整柱代表的数值，把默认在柱上面改为在柱右侧
+bar.reversal_axis()#把x,y轴反转，即把竖向的柱状图改成横向的（柱从左向右延伸）
+bar.render("基础柱状图.html")
+
+
+时间线：创建一个一维的x轴，坐标是时间，轴上每一个点都对应一个图表对象
+from pyecharts.charts import Bar,Timeline
+from pyecharts.options import LabelOpts
+from pyecharts.globals import ThemeType
+#构建出3个柱状图
+bar1=Bar()
+bar1.add_xaxis(["中国","美国","英国"])
+bar1.add_yaxis("GDP",[30,30,10],label_opts=LabelOpts(position="right"))#添加y轴数据，第一个参数为y轴数据名称,最后一个参数调整柱代表的数值，把默认在柱上面改为在柱右侧
+bar1.reversal_axis()
+
+bar2=Bar()
+bar2.add_xaxis(["中国","美国","英国"])
+bar2.add_yaxis("GDP",[50,50,50],label_opts=LabelOpts(position="right"))#添加y轴数据，第一个参数为y轴数据名称,最后一个参数调整柱代表的数值，把默认在柱上面改为在柱右侧
+bar2.reversal_axis()
+
+bar3=Bar()
+bar3.add_xaxis(["中国","美国","英国"])
+bar3.add_yaxis("GDP",[70,60,60],label_opts=LabelOpts(position="right"))#添加y轴数据，第一个参数为y轴数据名称,最后一个参数调整柱代表的数值，把默认在柱上面改为在柱右侧
+bar3.reversal_axis()
+
+time_line=Timeline({"theme":ThemeType.LIGHT})#构建时间线对象，第二个参数为设置主题，不同主题有不同的柱颜色等
+time_line.add(bar1,"点1")
+time_line.add(bar2,"点2")
+time_line.add(bar3,"点3")
+time_line.add_schema(
+    play_interval=1000,#设置播放每张柱状图的时间间隔,单位为ms
+    is_timeline_show=True,#是否显示时间线
+    is_auto_play=True,#设置自动播放，要不需要手动点一个按钮才会播放
+    is_loop_play=True #是否循环播放
+)
+#最后绘图是用时间线对象进行绘图，而不是bar
+time_line.render("基础时间线柱状图.html")
+
+
+列表的排序方法：列表.sort(key=一个作为排序依据的函数（即lambda表达式）,reverse=True/False（true为降序，false为升序)
+传入的key与这里与c++的谓词不同，这里的key只指出使用列表中的元素哪一部分进行排序，而不返回一个bool值。如一个元素是列表的列表，想根据元素列表的第二个数值进行排序，就是return element[1]。sort会依次把列表中的元素作为参数传入key函数中，将key函数的返回值作为排序依据
+
+list=[["1",1],["3",3],["2",2]]
+def choose_sort_key(element):
+    return element[1]
+list.sort(key=choose_sort_key,reverse=True)
+print(list)  输出[['3', 3], ['2', 2], ['1', 1]]
+
+也可以调用lambda表达式
+list=[["1",1],["3",3],["2",2]]
+list.sort(key=lambda element:element[1],reverse=True)
+print(list)
+
+
+动态柱状图的构建：
+将给定的.csv格式的文件用记事本方式打开，发现共有3列，第一列为年份，第二列为国家名，第三列为GDP数值，每列之间用逗号隔开，第一行是说明每列数据表示（无意义）。每一年都有很多个国家，而我们只想选用GDP最高的前8个国家作柱状图
+
+from pyecharts.charts import Bar,Timeline
+from pyecharts.options import LabelOpts,TitleOpts
+from pyecharts.globals import ThemeType
+#若文件右下角编码格式为ANSI（默认编码格式），且文件语言是中文，这里打开的编码格式就用GB2312
+f=open("D:/python/data/1960-2019全球GDP数据.csv","r",encoding="GB2312")
+data_lines=f.readlines()
+f.close()
+data_lines.pop(0)#删去第一行无意义数据
+#将数据转换为字典存储，格式为{年份:[[国家,gdp],[国家,gdp],...],年份:[[国家,gdp],[国家,gdp],...],...}
+data_dict={}
+for line in data_lines:
+    year=int(line.split(",")[0])#通过逗号切分，把字符串年份转成整数
+    country=line.split(",")[1]
+    gdp=float(line.split(",")[2])#将科学计数法（5.433E+11）转化为正常的float
+    #判断字典中有没有指定的关键字（年份是不是第一次添加），与c++不同，直接用关键字提前未存在的键值对不会自动创建
+    #如果没有的话，抛出异常keyerror，捕获异常并向里面添加这一年份（一个空列表）
+    #如果有的话，直接用data_dict[year]提取列表，向里面添加[国家,gdp]即可
+    try:
+        data_dict[year].append([country,gdp])
+    except KeyError:
+        data_dict[year]=[]#此行代码是创建data_dict中一个新年份对应的列表
+        data_dict[year].append([country, gdp])
+#因为data_dict中年份没有顺序，所以先提取所有的年份，对年份进行排序，按照排完序的年份提取data_dict中对应的列表，确定柱状图的顺序
+sorted_year_list=sorted(data_dict.keys())
+
+timeline=Timeline({"theme":ThemeType.LIGHT})#创建时间线
+for year in sorted_year_list:#这里面一次循环就是创建一张柱状图
+    #因为只想要前8的国家，要对每一个年份的列表按gdp进行排序
+    data_dict[year].sort(key=(lambda element:element[1]),reverse=True)
+    #取出本年份前8的国家
+    year_data=data_dict[year][:8] #是一个有8个元素的列表，每个元素都是一个有2个元素的列表，第一个元素是国家，第二个是GDP
+    x_data=[] #x轴是国家
+    y_data=[] #y轴是GDP
+    for country_gdp in year_data:#把数据添加入x,y轴数据中、
+        x_data.append(country_gdp[0])
+        y_data.append(country_gdp[1]/100000000)#以亿为单位
+    x_data.reverse()#把x,y轴数据反转，若不加，GDP小的国家在上面
+    y_data.reverse()
+    bar=Bar()#构建柱状图
+    bar.add_yaxis("GDP（亿）",y_data,label_opts=LabelOpts(position="right"))
+    bar.add_xaxis(x_data)
+    bar.reversal_axis()
+    bar.set_global_opts(
+        title_opts=TitleOpts(title=f"{year}年全球前8GDP数据")
+    )
+    timeline.add(bar,str(year))#第二个参数为时间线上这点的名称，这里设置为年份（需要转成字符串格式）
+timeline.add_schema(
+    play_interval=1000,
+    is_timeline_show=True,
+    is_auto_play=True,
+    is_loop_play=False
+)
+timeline.render("1960-2019全球GDP前8国家.html")
+
+

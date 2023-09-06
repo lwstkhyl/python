@@ -1,0 +1,73 @@
+import keyword
+print(keyword.kwlist)  输出python中的关键字
+标识符  ：字母 数字 下划线    ，不能以数字开头，不能是关键字，区分大小写
+name='111'
+print(name)    获取name的特征
+print('标识',id(name))     标识（地址） 1359494586032
+print('类型',type(name))    类型 <class 'str'>
+print('值',name)          值 111
+变量可多次赋值。每次赋值指向新的空间
+
+整数int  正数负数0   直接a=1 b=0 c=-1  默认int+十进制
+二进制+0b:  print(0b10101111)  175
+八进制+0o：   print(0o176)  126
+16进制+0x:  print(0x1EAF) 7855
+
+浮点数float  a=1.1  b=2.2  print(a*b)  输出2.4200000000000004  存在误差
+from decimal import Decimal
+print(Decimal('1.1')*Decimal('2.2'))  就可以正常输出2.42
+
+布尔 bool->ture和false  
+f1=True  首字母要大写
+f2=False
+bool可以转为int算   print(f1+1)输出2     true是1  false是0
+
+字符串str->'111'
+可以使用单引号、双引号、3*单引号、3*双引号    类型都是str
+3*单引号、3*双引号 可以换行输出
+str1='111'
+str2="111"
+str3='''111
+111'''
+str4="""111
+111"""''
+
+数据类型转换  将str类型与int类型连接时报错  print('111'+name+'111'+age+'111')  报错（+表示连接）
+print('111'+name+'111'+str(age)+'111')  可以
+使用str()将永久改变该数据类型
+int()可以转str类型，前提是该串为整数数字串   也可以转float类型，截取整数部分  也可以转bool true->1 flase->0
+float()可以转str类型，前提是为数字串 ‘1.1’->1.1 '1'->1.0   转int类型 98->98.0 转bool类型：true->1.0 flase->0.0
+
+注释：
+#---单行注释
+‘’‘-
+-
+-’‘’多行注释
+在整个程序前加上 #coding：gbk 把编码方式变成ansi (maybe要用中文冒号）
+加上#coding:utf-8  编码方式变成utf-8  (maybe要用英文冒号）
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

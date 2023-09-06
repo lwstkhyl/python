@@ -1,0 +1,70 @@
+通过第三方包pymysql可以在python上操控数据库
+from pymysql import Connection
+conn=Connection(#构建到数据库的连接
+    host="localhost",#主机名
+    port=3306,#端口默认值
+    user="root",#账户
+    password="123456"
+)
+print(conn.get_server_info())#得到数据库的基础信息（数据库版本）
+#在数据库中创建一张表：
+cursor=conn.cursor()#获取游标对象
+conn.select_db("test1");#选择要使用的数据库
+cursor.execute("create table test_pymysql(id int)")#相当于把“”内的内容放到MySQL里执行，且结尾不用写分号
+#查询：
+conn.select_db("world");#选择要使用的数据库
+cursor.execute("select * from student")
+result=cursor.fetchall()#把上面语句在MySQL中的输出结果以元组的形式存到result内
+print(result)  输出((4, 'cde', 18), (5, 'bcd', 19), (1, None, None)，或者用循环：
+for r in result:
+    print(r)  把每行数据输出
+conn.close()#关闭连接
+
+数据插入：按上面方法在cursor.execute内写入MySQL的插入语句是不行的，因为数据库在数据更改时需要进行确认，在python中需要代码完成这一操作
+from pymysql import Connection
+conn=Connection(
+    host="localhost",
+    port=3306,
+    user="root",
+    password="123456"
+)
+cursor=conn.cursor()
+conn.select_db("world")
+cursor.execute("insert into student values(6,'abc',20)")
+conn.commit()#确认操作
+conn.close()
+如果不想手动确认commit,就在conn=Connection()内添加autocommit=True
+
+
+应用：将数据分析那节使用的数据写入数据库中，包括日期、订单号、销售额、省份四个列
+先在dbeaver中创建一个库和里面的表：
+create database py_sql charset utf8;#创建一个数据库py_sql
+use py_sql;
+create table orders(#创建一张表orders
+	order_date date,
+	order_id varchar(255),
+	money int,
+	province varchar(10)
+);
+用之前数据分析的包data_define和file_define，在main中写:
+from file_define import text_file_reader,json_file_reader
+from data_define import record
+from pymysql import Connection
+new_text_file_reader = text_file_reader("D:/python/data/2011年1月销售数据.txt")
+new_json_file_reader = json_file_reader("D:/python/data/2011年2月销售数据JSON.txt")
+jan_data:list[record]=new_text_file_reader.read_data()
+feb_data:list[record]=new_json_file_reader.read_data()
+all_data:list[record]=jan_data+feb_data
+conn=Connection(
+    host="localhost",
+    port=3306,
+    user="root",
+    password="123456",
+    autocommit=True
+)
+cursor=conn.cursor()
+conn.select_db("py_sql")
+for record in all_data:
+    sql=f"insert into orders(order_date,order_id,money,province) values('{record.date}','{record.order_id}','{record.money}','{record.province}')"
+    cursor.execute(sql)
+conn.close()

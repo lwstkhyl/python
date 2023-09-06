@@ -1,0 +1,16 @@
+追加方式写到文件
+fp = open('D:/test.txt', 'a+')
+print('111', file=fp)
+fp.close()
+
+print('hello\nworld')   换行
+print('hello\tworld')    tab
+print('helloooo\tworld')  一个tab占4个英文字符，同c
+print('hello\rworld')  把光标移到开头，吞掉hello只剩world
+print('hello\bworld')  退一格 输出hellworld
+print('hello\\world')  \\->\   \\\\->\\
+print('hello\'world')  \'->'
+原字符：字符串中转义字符无作用  print(r'hello\'world')  hello\'world
+原始字符串最后不能是反斜线  print(r'hello\'world\')报错  print(r'hello\'world\\')可以
+print(chr(0b100111001011000))  chr(输出字)+0b(表示二进制)+汉字二进制编码  可输出汉字
+print(ord('乘'))  输出汉字的十进制编码  即上面的二进制转为10进制

@@ -1,0 +1,29 @@
+递归：函数在自己的函数体中调用自己
+现有一个文件夹test，里面有一个txt文件和2个文件夹a、b，a中有1个txt文件，b中有1个txt文件和文件夹c，c中又有1个txt文件，现要写一个函数找到test下所有的txt文件，就可以用递归实现，返回一个list包含所有.txt文件的路径
+test--a-------2.txt
+      b-------3.txt
+              c--------4.txt
+      1.txt
+
+利用os模块下的三个方法：
+listdir-列出给定文件夹下的所有文件，返回一个列表，元素为文件名
+path.isdir-判断给定路径是否为一个文件夹，返回bool值
+path.exists-判断给定路径是否存在
+
+import os
+def get_files_recursion_from_dir(path):
+    file_list=[]#定义一个列表用于存储文件路径
+    if os.path.exists(path)==True:
+        for f in os.listdir(path):
+            new_path=path+"/"+f #f是文件名，需要组装成完整路径进行下一步的查找
+            if os.path.isdir(new_path)==True:
+                file_list+=get_files_recursion_from_dir(new_path)#是文件夹，就再调用函数采集内部的.txt文件,并把其结果加到file_list内
+            else:
+                file_list.append(new_path)#不是文件夹，而是.txt文件，就将其路径放入结果列表中
+    else:
+        print(f"指定目录：{path}不存在")
+        return []
+    return file_list
+print(get_files_recursion_from_dir("D:/python/test"))
+
+注意：递归要有结束条件，不能有无限循环；如果有返回值的话，注意返回值要从最内层逐层传递到最外层

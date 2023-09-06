@@ -1,0 +1,109 @@
+所有的对象都有一个bool值
+通过bool（）获得对象bool值
+False,零数值（0，0.0），none,空字符串（‘ ’，“ ”），空列表([ ],list())，空元组((),tuple())，空字典({},dict())，空集合(set())的bool值均为false
+其他的均为true
+
+单双分支：
+if 条件判断 ：
+     执行语句1
+else：
+     执行语句2
+判断奇偶数：
+num=int(input('输入一个数：'))
+if num%2==0:
+    print(num,'是偶数')
+else:
+    print(num,'是奇数')
+取款：
+money=1000
+s=int(input('取款金额：'))
+if money>=s:
+    money-=s
+    print('取款成功，余额为',money)
+else :
+    print('取款失败')
+
+多分支：
+if 条件判断1 :
+     执行语句1
+elif 条件判断2 :
+     执行语句2
+elif 条件判断n :
+     执行语句n 
+[else:]->可写可不写
+成绩判断：
+a=int(input('成绩：'))
+if a<=100 and a>90:   也可以  90<=a<=100  
+    print('a')
+elif a<=90 and a>80:
+    print ('b')
+elif a<=80 and a>70:
+    print('c')
+elif a<=70 and a>=60:
+    print('d')
+elif a>=0 and a<60:
+    print('no')
+else:
+    print('wrong')
+
+
+嵌套if：
+if条件表达式1：
+       if内层条件表达式：
+           内层执行语句1
+       else：
+           内层执行语句2
+else：
+        执行语句                     
+
+a=int(input('?'))
+money=float(input('金额：'))
+print('结果为：')
+if a==1:
+    if money>=200:
+        print(money*0.8)
+    elif money>=100:
+        print(money*0.9)
+    else:
+        print(money)
+else:
+    if money>=200:
+        print(money*0.95)
+    else:
+        print(money)
+
+
+条件判断： x if 条件语句 else y  如果条件为true 就输出x内容  否则输出y内容    相当于c的 ？：
+比较大小：
+a=int(input('第一个数：'))
+b=int(input('第二个数：'))
+print( (str(a) +'>='+str(b)) if a>=b else (str(a)+'<'+str(b)))
+
+pass语句：只是占位符，用到需要写语句的地方，让语法不报错
+a=input()
+if a==1:
+    pass
+else:
+    pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

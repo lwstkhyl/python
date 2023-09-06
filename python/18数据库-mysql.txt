@@ -1,0 +1,92 @@
+数据库存储数据按照库->表->数据这3个层级，存储数据过程中会用到数据新增、删除、修改、查询、管理等，sql语言就是这样一种工具
+在命令提示符中输入mysql -uroot -p，若没报错就说明正常安装
+输入show databases;可以查看有哪些库
+输入use 数据库名;可以进入到使用该库的模式中
+输入show tables;可以查看该库中有哪些表
+输入exit可以退出使用MySQL的环境
+
+使用图形化工具操作MySQL--dbeaver
+
+sql语言：不区分大小写，可以单行/多行书写，最后以分号结束
+单行注释：-- 注释内容（注意--和注释内容之间要有空格）  或者 #注释内容
+多行注释:/* 注释内容*/
+
+在dbeaver中点击从上到下第二行中的SQL按钮，输入show databases;，点击旁边的小三角就可以运行查看数据库，输入select database();查看当前使用的数据库
+创建一个数据库：或者右键左面数据库那个文件夹->新建
+create database test charset utf8;#test是数据库名称，charset utf8是编码格式（可有可无）
+drop database test;#删除该库，或者右键左面文件夹->删除
+
+运行单行语句：左键选中某行，然后按三角
+全部执行：按右边有加号的三角
+刷新左面的文件：左键按住需要刷新的文件夹，同时按f5
+
+show tables;显示有哪些表
+创建表：
+create table(
+	列名称 列类型,
+	列名称 列类型,
+	...
+);
+其中列类型包括int,float,varchar,date,timestamp等,其中varchar使用时后面要加一个括号，里面是数据的最大长度，如
+create table student( 
+	id int,
+	name varchar(10),
+	age int
+);
+删除表：drop talbe 表名称   或者 drop table if exists 表名称
+
+数据插入：insert into 表名称[(列1，列2，...，列n)]values(值1，值2，...，值n)[，(值1，值2，...，值n)，...，(值1，值2，...，值n)]
+其中中括号表示可选该部分内容可选，如
+insert into student (id) values(1),(2),(3);#表示向id这列插入3行数据，分别为1，2，3
+等效于
+insert into student (id) values(1);
+insert into student (id) values(2);
+insert into student (id) values(3);
+还可以
+insert into student (id,name,age) values(4,'abc',18),(5,'bcd',18);
+表示向3列中插入2行数据
+等效于
+insert into student values(4,'abc',18),(5,'bcd',18);
+
+数据删除：delete from 表名称 [where 条件判断语句]  （这里面判断等于是=而不是==）
+delete from student where id =1; #删除id为1的这行数据
+delete from student where id >4; #删除id>4的数据
+delete from student ;#把这张表里的数据全部删除
+
+数据更新：update 表名称 set 列名=值 [where 条件判断语句]
+update student set name='cde' where id =4;#把id为4那行的name改成cde
+如果不写条件判断语句就是把表中所有的name改成cde
+
+数据查询：select 字段列表/* from 表名称
+即从表中选择某些列进行展示，如
+select id,name from student; 就是展示student列表中id和name两列
+select *from student; 就是展示全部列
+还可以在其后面加上where条件判断语句，如
+select *from student where age>=18;
+
+分组聚合：如统计班级中男生和女生的认识，需要按性别分组，再统计每个组的人数
+select 字段/聚合函数 from 表 [where 条件判断] group by 列
+聚合函数主要有sum(列) avg(列) min(列) max(列) count(列/*) 求每组的数量
+select gender,avg(age) from student1 group by gender;  按gender列不同值进行分组
+最后输出两列，一列是gender的两种值，一列是对应的age的平均值，即
+男--18
+女--17
+注意gender,avg(age)的gender必须同group by后面的列名
+也可以
+select gender,avg(age),sum(age),min(age),count(*) from student1 group by gender;
+会输出多列（gender,avg,sum,min,max),其中count(*)也可以写成count(gender)
+
+排序分页：可以对查询的结果，指定某个列进行排序
+select 列/聚合函数/* from 表 where 条件判断语句 [group by 列] order by 列 [asc/desc]     
+其中asc是从小到大，desc是从大到小，默认为asc
+select * from student1 where age>13 order by age asc; 输出age>13的按age排序完的所有列
+其中select *代表输出（查询）所有列
+
+使用limit关键字对查询结果进行数量限制或分页显示
+select 列/聚合函数/* from 表 [where 条件判断语句][group by 列] [order by] 列 [asc/desc]  limit [n,]m
+表示把结果从第n+1条开始往下输出m条（跳过n条），n默认为0
+select * from student1 limit 5,5; 输出原数据的第6到10行              
+
+select age,count(*) from student1 where age>15 group by age order by age limit 3;
+把age>15的按age分组并按age排序，输出前3条（包括age和count数量两列)
+注意这几组小短语的顺序不能变

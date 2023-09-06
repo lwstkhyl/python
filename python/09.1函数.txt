@@ -1,0 +1,142 @@
+创建：
+def 函数名（形参）：
+   函数体
+   return值（可省略）
+def calc(a,b):
+    c=a+b
+    return c
+result=calc(10,20)
+print(result)  输出30
+正常的传参同c
+特殊的可以关键字传参：
+def calc(a,b): 中关键字为a,b
+如果result=calc(10,20)  传的时候calc中的a=10,b=20
+result=calc(b=10,a=20)  传的时候calc中的a=20,b=10,此时不按照位置传
+
+def fun(arg1,arg2):
+    print('arg1=',arg1)  arg1= 11
+    print('arg2=',arg2)  arg2= [22, 33, 44]
+    arg1=100
+    arg2.append(10) //向arg2中添加元素
+    print('arg1=',arg1)  arg1= 100
+    print('arg2=',arg2)  arg2= [22, 33, 44, 10]
+n1=11   
+n2=[22,33,44]
+print(n1)  11
+print(n2)  [22, 33, 44]
+fun(n1,n2)
+print(n1)  11
+print(n2)  [22, 33, 44, 10]
+在函数调用过程中，进行参数的传递
+如果是不可变对象（字符串，元组、各数据类型如int bool等），在函数体内修改（增/删/改/替换操作）不影响实参 （值传递）
+如果是可变对象（列表，字典，集合），在函数体内修改会改变实参  （引用/指针传递）
+
+函数的返回值：
+函数可以没有返回值
+函数返回值为1个，直接返回返回值的类型
+函数返回多个值时，结果为元组
+def fun(num):
+    odd=[]
+    even=[]
+    for i in num:
+        if i%2==1:
+            odd.append(i)
+        else :
+            even.append(i)
+    return odd,even
+lst=[10,29,34,24,44,53,55]
+print(fun(lst))  输出([29, 53, 55], [10, 34, 24, 44])
+
+函数定义默认值参数：给形参设置默认值，当实参形参不同数量时才用形参默认值
+def fun(a,b=10):
+    print(a,b)
+fun(100)  输出100 10 --只有100一个实参，才用形参默认值
+fun(20,30)  输出20 30 --与形参数量相同，不用默认值
+
+函数的参数定义：
+个数可变的位置形参：定义函数时，可能无法事先确定传递的位置实参的个数时，使用可变的位置参数，在参数前加上*，结果为元组.最多只能定义一个
+def fun(*args):
+    print(args)
+fun(10)  输出(10,)
+fun(10,20,30)  输出(10, 20, 30)
+个数可变的关键字形参：在参数前加上**，结果为一个字典。最多只能定义一个
+def fun1(**args):
+    print(args)
+fun1(a=10)  输出{'a': 10}
+fun1(a=20,b=30,c=40)  输出{'a': 20, 'b': 30, 'c': 40}
+
+def fun2(*arg1,**arg2): 正确
+    pass
+def fun2(**arg1,*arg2): 报错
+    pass
+在一个函数的定义过程中，若既有个数可变的关键字形参也有个数可变的位置形参，要求先位置形参再关键字形参
+
+def fun2(*arg1,**arg2):
+    print(arg1)
+    print(arg2)
+fun2(a=10,10)  报错
+必须fun2(10,20,a=10,b=20)  
+输出(10, 20)
+{'a': 10, 'b': 20}
+
+
+传参：
+def fun(a,b,c):
+    print(a,b,c)
+fun(10,20,30)  输出10 20 30（位置传参）
+lst=[10,20,30]
+fun(*lst)  也可以输出10 20 30（位置传参）
+fun(a=100,c=200,b=300)  输出100 300 200(关键字传参）
+dic={'a':100,'c':300,'b':200}
+fun(**dic)  输出100 200 300  将字典中的键值对都转换为关键字实参传入
+
+def fun(a,b=10):      b为默认值实参
+    print(a,b)
+def fun1(a,b,*,c,d):  *之前的参数采用哪种方式都行，之后的只能采用关键字实参传递
+    print(a,b,c,d)
+fun1(a=10,b=20,c=30,d=40)  输出10 20 30 40
+fun1(20,10,d=30,c=40)  输出20 10 40 30
+fun1(10,20,30,40)  会报错
+
+def fun2(a,b,*,c,**arg):  可以
+def fun3(a,b=10,*args,**args1): 可以，只要将输出为元组的写前面，输出字典的写后面就行
+
+
+
+变量的作用域：
+def fun(a,b):
+    c=a+b         
+    print(c)
+上面的c就称为局部变量，因为c是在函数体内进行定义的变量，a,b,为函数形                      参，作用范围也在函数内部，也可看作局部变量
+这部分和c的局部变量定义相同
+def fun1():
+    global age               在age前加上global，age成为全局变量
+    age=20
+    print(age)
+fun1()
+print(age)   都输出20
+
+
+递归函数：在一个函数的函数体内调用改=该函数本身
+必须有递归终止条件  使用if else 进行return
+求阶乘：
+def fac(n):
+    if n==1:                  //一直乘到n为1的时候
+        return 1
+    else :
+        return n*fac(n-1)     //n不为1，就乘下一个数  
+print(fac(6))  输出720
+斐波那契数列：1 1 2 3 5 8 13 21
+def fac(n):    n为数列的第几位
+    if n==1:
+        return 1
+    elif n==2:
+        return 1
+    else:
+        return fac(n-1)+fac(n-2)
+print(fac(6))  输出8
+
+输出数列中前6个数：
+for i in range(1,7):
+    print(fac(i))     输出1 1 2 3 5 8（每个数都会换行）
+

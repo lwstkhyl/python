@@ -1,0 +1,131 @@
+一个模块中包含函数、类、语句等
+很多个模块组成python程序
+自定义模块：新建一个.py文件，名称不要与python自带的标准模块名称相同
+
+导入模块：
+1、import math
+print(id(math))  
+print(type(math))
+print(math)
+print(dir(math))  可以查看该模块中都有什么功能
+print(math.pow(2,3),type(math.pow(2,3)))  输出8.0 <class 'float'>
+2、from math import pow
+print(pow(2,3),type(pow(2,3)))   只导入了math中的pow函数，调用时不用加math.
+from math import * 导入math中的所有函数，使用math中的函数都不用加math.
+3、导入自己创建的模块
+在2.py中：
+def xiangjia(a,b):
+    return a+b
+之后找到2.py所在文件夹 右键 将目录标记为 源代码根目录
+在main.py中可以直接
+from 2 import xiangjia
+print(xiangjia(1,2))  输出3
+注意2.py和main.py要在一个文件夹下
+
+以主程序形式运行：
+在calc2中：
+def add(a,b):
+    return a+b
+print(add(1,2))
+在main中：
+from calc2 import add
+print(add(1,2))
+此时运行会出现两个3，要是想只输出一个3
+在calc2中把print(add(1,2))改成
+if __name__=='__main__':
+    print(add(2,2))
+此时如果在main界面点击运行，只输出3，在calc2界面点击运行只输出4，因为在calc2界面点击运行是把cal2作为了main进行执行
+
+python中的包：
+新建一个python软件包package1，里面自动包含__init__.py文件，在这个文件夹里面再新建一个model1.py（包中新建一个模块）,在里面写入a=10，回到main中，import package1.model1
+print(package1.model1.a) 输出10
+也可以import package1.model1 as ma
+print(ma.a) 其中ma是package1.model1的别名
+
+注意使用import方式进行导入时只能是包名或模块名；使用from-import时：from+包名+import+模块名，from+模块名+import+函数名 均可，可以导入包、模块、函数、变量等
+
+第三方包的安装：
+开始菜单旁边的搜索里输入cmd,点击命令提示符程序，输入pip install 包名称，这里想安装numpy包，就输入pip install numpy  或者更快的方法是 pip install -i https://pypi.tuna.tsinghua.edu.cn/simple(国内镜像地址） 包名称
+安装特定版本的第三方包：pip install cchardet==2.1.3即是安装2.1.3版本的cchardet
+也可以用pycharm自带的安装：点击右下角的python.exe,选择解释器设置，可以看到安装了哪些包，点击“+”，可以进入安装界面，搜索想安装的包，点击右下角的选项，输入-i https://pypi.tuna.tsinghua.edu.cn/simple(国内镜像地址）可以提高安装速度
+
+
+创建一个自定义的包，my_utils
+包内提供两个模块str_util.py,包含函数:str_reverse(s)，接受传入字符串，将字符串反转返回和substr(s，x，y)，按照下标x和y，对字符串进行切片；file_util.py，包含函数print_file_info(file_name)，接收传入文件的路径，打印文件的全部内容，如文件不存在则捕获异常，输出提示信息，通过finally关闭文件对象、append_to_file(file_name，data)，接收文件路径以及传入数据，将数据追加写入到文件中
+
+1、创建包：右键左侧pythonproject，选择new（新建）->python package（软件包）,名称为my_utils，回车，可以找到一个__init__.py的文件；右键左侧my_utils，选择new（新建）->python file（文件），名称为str_util.py，同样方法添加一个file_util.py
+2、说明文档：在.py文件中连续输入3次”，再回车，会出现   
+     """
+                         #可以写入描述函数功能的文字
+    :param s:     #函数传入参数
+    :return: 	  #函数返回参数
+    """
+3、在str_util.py中测试函数功能：输入main，会提示出if __name__ == '__main__':
+在其中调用函数进行测试，这样在作为包导入的时候就不会执行调用函数进行测试的内容
+注意右上角运行按钮左面的那个小框框里面应该是“当前文件”或者是.py文件名
+
+完整代码：
+str_util.py：
+def str_reverse(s):
+    """
+    功能是将字符串完成反转
+    :param s: 要被反转的字符串
+    :return: 反转后的字符串
+    """
+    return s[::-1]
+def substr(s,x,y):
+    """
+    功能是按照给定的下标完成给定字符串的切片
+    :param s: 要被切片的字符串
+    :param x: 切片的开始下标
+    :param y: 切片的结束下标
+    :return: 切片完成后的字符串
+    """
+    return s[x:y:]
+
+if __name__ == '__main__':
+    print(substr("12345",1,3))
+    print(str_reverse("abc"))
+
+file_util.py：
+def print_file_info(file_name):
+    """
+    功能是将给定路径的文件内容输出到控制台中
+    :param file_name: 要读取的文件路径
+    :return: 无返回值
+    """
+    f=None
+    try:   #要解决路径不存在的异常
+        f=open(file_name,"r",encoding="UTF-8")
+        content=f.read()
+        print("文件的内容如下")
+        print(content)
+    except Exception as e:
+        print(f"程序出现异常，原因是：{e}")
+    finally:
+        if f!=None:  #只有f不是none（路径存在）才能进行close操作
+            f.close()
+def append_to_file(file_name,data):
+    """
+    功能是将指定的数据追加到指定的文件中
+    :param file_name: 指定的文件路径
+    :param data: 指定的数据
+    :return: 无返回值
+    """
+    f=open(file_name,"a",encoding="UTF-8")
+    f.write(data)
+    f.write("\n")
+    f.close()
+if __name__ == '__main__':
+    append_to_file("D:/test1.txt","222")
+    print_file_info("D:/test1.txt")
+
+main.py(主函数调用）：
+import my_utils.str_util #这种方法调用其中函数时要加上my_utils
+from my_utils import file_util #这种方法就不用，只需加file_util
+print(my_utils.str_util.str_reverse("123"))
+print(my_utils.str_util.substr("abcde",1,3))
+file_util.append_to_file("D:/test1.txt","main")
+file_util.print_file_info("D:/test1.txt")
+
+

@@ -1,0 +1,38 @@
+进程：某个程序运行在系统上，这个程序为一个运行进程，系统分配进程id方便系统管理，可以看作系统对程序进行管理的单位
+线程：属于进程，一个进程可以开启多个线程，执行不同的工作，是进程的实际工作最小单位（实际工作者）
+系统中可以有多个进程，即多任务运行；一个进程内可以运行多个线程，即多线程运行
+进程之间是内存隔离的，即不同的进程拥有各自的内存空间；而线程之间是内存共享的，一个进程内的多个线程之间是共享这个进程所拥有的内存空间的
+并行执行：同一实际做不同的工作，进程之间是并行执行的，系统可以同时运行多个程序，它们在并行执行；一个python程序可以有多个线程并行执行
+
+通过threading模块实现多线程编程
+import time
+def sing():
+    while True:
+        print("singing")
+        time.sleep(1)
+def dance():
+    while True:
+        print("dancing")
+        time.sleep(1)
+sing()
+dance()  只会一直输出singing，因为sing函数不能结束，不会执行dance()
+
+import threading
+import time
+def sing():
+    while True:
+        print("singing")
+        time.sleep(1)
+def dance():
+    while True:
+        print("dancing")
+        time.sleep(1)
+sing_thread=threading.Thread(target=sing)#创建线程对象参数为需要执行的函数
+dance_thread=threading.Thread(target=dance)
+sing_thread.start()#开始执行指定线程
+dance_thread.start()  此时可以一边输出singing一边输出dancing
+
+函数传入参数：
+sing_thread=threading.Thread(target=sing,args=("singing",))#以元组的方式传参，注意"singing"后要有一个逗号，只有这样才是元组，要不就是普通的括号
+dance_thread=threading.Thread(target=dance,kwargs={"msg":"dancing"})#字典的形式传参，key是参数名，value是参数值
+以上两种方法等价

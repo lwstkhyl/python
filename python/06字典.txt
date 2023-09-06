@@ -1,0 +1,72 @@
+字典是python内置的数据结构之一，与列表一样是一个可变序列
+以键值对的方式存储数据，是一个无序的序列
+
+创建：
+1、使用{} 
+a={'a':100,'b':200}
+print(a,type(a))  输出{'a': 100, 'b': 200} <class 'dict'>
+2、内置函数dict
+a=dict(name='a',age=100) 输出{'name': 'a', 'age': 100}
+空字典  a={}
+
+获取字典中元素：
+1、a={'a':100,'b':200,'c':300}
+print(a['a'])  输出100
+若不存在，报错keyerror
+2、print(a.get('a'))  输出100
+若不存在，不报错，输出None
+print(a.get('d',99))  则输出99，99是查找不存在时的默认值
+
+key的判断：
+print('d' in a)  输出False
+print('d' not in a )  输出True
+
+字典元素的删除：
+del a['a']  输出{'b': 200, 'c': 300}
+a.clear()  清空字典元素，输出{}
+
+字典元素的新增/修改：
+a['d']=400  输出{'a': 100, 'b': 200, 'c': 300, 'd': 400}
+之后再a['d']=401  输出{'a': 100, 'b': 200, 'c': 300, 'd': 401}，完成修改操作
+
+获取字典视图：
+1、b=a.keys()  
+print(b)  输出:dict_keys(['a', 'b', 'c'])
+print(list(b))  输出['a', 'b', 'c']
+2、b=a.values()  
+print(b)  输出dict_values([100, 200, 300])
+print(list(b))  输出[100, 200, 300]
+3、b=a.items()
+print(b)  输出dict_items([('a', 100), ('b', 200), ('c', 300)])
+print(list(b))  输出[('a', 100), ('b', 200), ('c', 300)]  转换之后的列表元素是由元组组成的
+
+字典元素的遍历：
+for item in a:
+print(item,a[item]）  输出a 100 ，也可以将a[item]换成a.get(item)
+
+字典的特点：
+1、键（‘ ’里的）不能重复
+a={'a':100,'a':200,'c':300}
+输出{'a': 200, 'c': 300}
+但值可以重复
+a={'a':100,'b':100,'c':300}
+输出{'a': 100, 'b': 100, 'c': 300}
+2、字典中元素无序
+3、字典中的键必须不可变，如list列表就不能作键
+4、字典动态分配内存
+5、占用内存较大
+
+字典生成式：
+items=['a','b','c']
+values=[100,200,300]
+a={item:value for item,value in zip(items,values)}
+print(a)  输出{'a': 100, 'b': 200, 'c': 300}
+a={item.upper():value for item,value in zip(items,values)}
+print(a)  输出{'A': 100, 'B': 200, 'C': 300}
+若items和values元素个数不同，
+则以items和values中元素少的进行生成，确保一个键对一个值（items的第一个对values的第一个，依此类推）
+
+
+
+
+

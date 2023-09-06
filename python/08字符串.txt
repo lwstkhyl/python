@@ -1,0 +1,133 @@
+字符串是基本数据类型，是不可变的字符序列(同元组）
+
+驻留机制：仅保存一份相同且不可变字符串，不同的值被存放在字符串的驻留池中，对相同的值只保留一份，之后再创建相同字符串时，不再使用新内存地址，直接把之前字符串的地址赋给新创建的变量
+条件：1、字符串长度为0或1时    或者2、字符串符合标识符规范（只含数字字母下划线）
+3、只在编译时驻留，a='abc' b='a'+'bc'会驻留，但c=''.join(['abc'])，这种用函数的方式必须在运行时才赋值的字符串 不会驻留
+4、-5至256的数字会驻留
+a='py'
+b="py"
+c='''py'''
+print(a,id(a))
+print(b,id(b))
+print(c,id(c))   输出后地址相同
+强制驻留：
+import sys
+a='abc%'       本来不会驻留
+b='abc%'
+a=sys.intern(b)
+print(a is b)   输出后地址相同
+注:上述方法必须在python下运行，pycharm已经进行了优化处理，有的情况会默认强制驻留
+
+查询操作：
+a='onpython'
+print(a.index('on'))   	输出0，'on'第一次出现的位置，不存在则报错ValueError
+print(a.find('on'))    输出0，'on'第一次出现的位置，不存在则输出-1
+print(a.rindex('on'))   输出6，'on'最后一次出现的位置，不存在则报错ValueError
+print(a.rfind('on'))   输出6，'on'最后一次出现的位置，不存在则输出-1
+建议使用find系列
+
+大小写转换：
+a='onpYtHn'
+b=a.upper()  把a中所有字母转为大写
+b=a.lower()  把a中所有字母转为小写
+b=a.swapcase()  把a中小写变大写，大写变小写
+b=a.title()  每个单词的首字母变大写   a='my way'->My Way
+转换后a的地址和值不变，会产生新的字符串对象
+
+对齐操作：
+a='my'
+b=a.center(20,'*')  输出*********my*********
+设置一个20长度的字符串，将a放在中间，左右用*填充，默认是空格，若设置长度小于a的长度则返回原字符串（居中对齐）
+b=a.ljust(10,'*')  输出my********   同上，唯一区别是将a放在左面（左对齐）
+b=a.rjust(10,'*')  输出********my   同上，唯一区别是将a放在右面（右对齐）
+b=a.zfill(10)  输出00000000my  同上，只用0进行填充且右对齐，不能自己设置填充字符
+a='-111'  b=a.zfill(10)  输出-000000111，会加在减号内
+
+劈分操作：
+a='hello world'
+lst=a.split()  输出['hello', 'world']（一个列表） 默认从空格处分割，无空格就不分
+a='he|llo world'
+lst=a.split(sep='|')  输出['he', 'llo world']，指定分隔符为’|‘
+a='hello world py th on'
+lst=a.split(maxsplit=1)  输出['hello', 'world py th on'] 指定最大分割次数为1，分完后剩下部分不再分  也可以lst=a.split(sep='|'，maxsplit=1)这样使用
+将上面的split换成rsplit,就是从右开始分割
+如lst=a.rsplit(maxsplit=1)  输出['hello world py th', 'on']
+
+判断操作：
+a='hello world py th on'
+b='abc'
+print(a.isidentifier())  输出False  判断a是否是合法的标识符字符串
+print(b.isidentifier())  输出True
+c=' '
+print(c.isspace())  输出True 判断字符串是否全部由空白字符组成（回车、换行、空格、tab)
+print(b.isalpha())  输出True 判断字符串是否全部由字母(或汉字）组成
+d='123'
+print(d.isdecimal())  输出True 判断字符串是否全部由十进制数字组成（必须阿拉伯数字）
+e='123四'
+print(e.isnumeric())  输出True 判断字符串是否全部由数字组成（包括汉字简体繁体数字、罗马数字、阿拉伯数字）
+f='123abc'
+print(f.isalnum())  输出True 判断字符串是否全部由数字和字母组成，这里的数字定义同isnumeric
+
+
+替换和合并：
+a='abc,bcd,abc,abc'
+b='cde'
+c=a.replace('abc',b)  表示用b来替换a中的abc，默认全部替换
+print(c)  输出cde,bcd,cde,cde
+c=a.replace('abc',b,2)  输出cde,bcd,cde,abc 表示替换2次，从左往右
+
+join->将列表或元组中的字符串合并成一个字符串
+lst=['12','34','56']或lst=('12','34','56')
+a='|'.join(lst)  表示用|将lst连接
+print(a)  输出12|34|56
+a='|'.join('python')  输出p|y|t|h|o|n  把每个字母看成单独字符串进行连接
+
+
+比较操作：相当于strcmp
+运算符同值运算符(< <= > >= == !=)  注意is比较的是地址，而==才是判断值相不相等
+规则：首先比较两个字符串中的第一个字符（按ASCII码），如果相等则继续比较下一个字符，依次比较直到某两个字符不相等，其比较结果就是字符串比较结果，后续字符将不再比较
+a='abcde'
+b='abced'
+print(a>b)  输出False，因为'd'<'e'，所以a<b
+用ord('a') 可获得其ASCII码，汉字也可以得到一个值
+用chr(97) 可获得ASCII码为97的字符，汉字也可用其对应值输出
+
+切片操作：不具备增删改操作，切片将产生新的对象
+注意切片是取左闭右开区间，且是一种保留给定范围字符的操作
+a='abcde'
+b=a[:2]  输出ab 表示从0切到2（不包括2）
+b=a[3:]  输出de 表示从索引为3的元素开始切到最后
+a='abcdefg'
+b=a[:-2]  输出abcde 表示从头一直取到倒数第三个元素（除去倒数后两个）  索引为-2的是f，但切片时不包括索引为-2
+b=a[1:5:2]  输出bd 表示从索引为1截到5（不包括5）步长为2
+b=a[::2]  输出aceg 默认从头到结尾
+[]里也可以填负数（负数索引和负数步长），这部分同列表的切片操作
+a='abcde'
+b='fg'
+c=a+b  输出abcdefg 表示将a、b连接
+
+格式化字符串：按一定格式输出的字符串
+name='abc'
+age=20
+print('111%s,222%d'%(name,age))   输出111abc,22220
+%s,%d为占位符（%s为string类型占位,%d或%i为整形占位，%f为浮点数占位），输出时会把占位符转为后面的(name,age)进行输出
+print(f'111{name},222{age}')  输出111abc,22220 用{}里的name替代占位符
+print('111{0},222{1},333{0}'.format(name,age))  输出111abc,22220,333abc
+用{}占位，{}中的为后面format里元素的索引，{0}就代表用format里第一个元素name替代占位符
+print('%10d'%99)  输出        99 ，10表示宽度，把99放在最左面（前面加负号为右对齐），前面用8个空格占位
+print('%.3f'%3.1415926)  输出3.142 表示保留3位小数
+print('%10.3f'%3.1415926)  输出     3.142 ，同时要求宽度和保留小数
+print('{0:.3}'.format(3.1415926))  输出3.14 表示一共3位数
+print('{0:.3f}'.format(3.1415926))  输出3.142 表示3位小数
+print('{0:10.3f}'.format(3.1415926))  等价于('%10.3f'%3.1415926)
+{}里面的0表示要输出字符串的索引，若只有1个字符串可省略
+print('{0:10.3f}'.format(1,3.1415926))  输出     1.000
+
+字符串的编码转换
+编码：
+s='天涯共此时'
+print(s.encode(encoding='GBK'))  输出b'\xcc\xec\xd1\xc4\xb9\xb2\xb4\xcb\xca\xb1'  GBK格式中一个汉字两个字节
+print(s.encode(encoding='UTF-8'))  输出b'\xe5\xa4\xa9\xe6\xb6\xaf\xe5\x85\xb1\xe6\xad\xa4\xe6\x97\xb6'  UTF-8格式中一个汉字三个字节
+解码：
+byte=s.encode(encoding='GBK')
+print(byte.decode(encoding='GBK'))  输出 天涯共此时 用UTF-8也行，但解码和编码格式必须相同

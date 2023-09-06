@@ -1,0 +1,132 @@
+常见bug：
+1、基本结构错误
+（1）age=input('abc')
+if age>=18:            此时输入数字会报错，要改成if int(age)>=18:
+    print(age)
+(2)i=0          必须要有初始值（定义变量）
+while i<10:
+    print(i)    括号不能写成中文的
+    i+=1        使循环结束的条件必须有
+（3）==比较运算符和=赋值运算符
+（4）if、else、循环、range等语句后的冒号
+（5）缩进错误--结构体
+2、基本语法错误
+（1）列表越界：lst=[1,2,3,4]  使用lst[4]错误
+（2）lst.append   一次只能加一个元素，且必须写.
+
+lst=[{'rating':[9.7,50],'id':'1292052','type':['犯罪','剧情'],'title':'肖申克的救赎','actors':['蒂姆.罗宾','摩根.弗里曼']},
+{'rating':[9.6,50],'id':'1291546','type':['剧情','爱情','同性'],'title':'霸王别姬','actors':['张国荣','张丰毅','巩俐','葛优']},
+{'rating':[9.6,50],'id':'1296141','type':['剧情','犯罪','悬疑'],'title':'控方证人','actors':['泰隆.鲍华','玛琳.黛德丽']}]    //这个lst是包含3个字典的列表
+name=input('要查询的演员')
+for item in lst:             //遍历列表lst，item是字典
+    act_list=item['actors']     //act_list是item字典中'actors'的值（也是一个列表）                                         （就是'actors'冒号后的那个列表）
+       if name in act_list:            //如果要查找的名字在act_list列表里
+        print(name,'出演了',item['title'])
+
+3、有输入的例外情况没有排除
+a=int(input('第一个整数：'))
+b=int(input('第二个整数：'))
+result=a/b
+print('结果为：',result)
+若输入字符串或者b=0会报错
+输入b=0时报错ZeroDivisionError，则
+
+try:
+    a = int(input('第一个整数：'))
+    b = int(input('第二个整数：'))
+    result = a / b
+    print('结果为：', result)
+except ZeroDivisionError:          //捕获异常
+    print('除数不能为0')
+print('程序结束')
+
+当输入b=0时，输出：
+第一个整数：10
+第二个整数：0
+除数不能为0
+程序结束
+
+输入字符串时报错ValueError，则
+
+try:
+    a = int(input('第一个整数：'))
+    b = int(input('第二个整数：'))
+    result = a / b
+    print('结果为：', result)
+except ZeroDivisionError:
+    print('除数不能为0')
+except ValueError:
+    print('只能输入数字')
+print('程序结束')
+
+输入字符串时输出：
+第一个整数：10 
+第二个整数：ab
+只能输入数字
+程序结束
+
+
+try...except...else 结构：如果try块中没有抛出异常，则执行else块，如果try中抛出异常，则执行except块
+try:
+    a = int(input('第一个整数：'))
+    b = int(input('第二个整数：'))
+    result = a / b
+    print('结果为：', result)
+except ZeroDivisionError as e:
+    print('除数不能为0',e)
+except ValueError as f:
+    print('只能输入数字',f)
+else:
+    print('程序结束')
+
+第一个整数：10
+第二个整数：5
+结果为： 2.0
+程序结束
+
+第一个整数：10 
+第二个整数：0
+除数不能为0 division by zero
+
+
+try...except...else...finally 结构：无论是否发生异常，finally块都会被执行，常用来释放try块中申请的资源
+try:
+    a = int(input('第一个整数：'))
+    b = int(input('第二个整数：'))
+    result = a / b
+    print('结果为：', result)
+except ZeroDivisionError as e:
+    print('除数不能为0',e)
+except ValueError as f:
+    print('只能输入数字',f)
+else:
+    print('程序结束')
+finally:
+    print('finally')
+
+第一个整数：10
+第二个整数：ab
+只能输入数字 invalid literal for int() with base 10: 'ab'
+finally
+
+第一个整数：10
+第二个整数：5
+结果为： 2.0
+程序结束
+finally
+
+若在函数1里面写入try——except操作，并调用函数2，函数2中会出现异常，则也会被捕获：异常具有传递性
+
+
+
+python中常见的异常类型：
+1、print(10/0)  ZeroDivisionError: division by zero（除数不能为0）
+2、lst=[1,2]  print(lst[2])  IndexError: list index out of range（索引越界）
+3、dic={'name':'abc','age':20}  print(dic['gender'])  KeyError: 'gender'（字典中没有这个键
+4、print(num)  NameError: name 'num' is not defined（未定义变量）
+5、int a=20  SyntaxError: invalid syntax（语法错误）
+6、a=int('abc')  ValueError: invalid literal for int() with base 10: 'abc'（字符串不能转为int）
+
+
+设置断点：当程序执行到断点
+
