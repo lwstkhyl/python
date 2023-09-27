@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+    </head>
+    <body>
+        <table width="200px" height="200px" border="1px">#表格
+            <tr>  #第一行
+                <td>
+                    姓名  #第一列
+                </td>
+                <td>
+                    年龄  #第二列
+                </td>
+                <td>
+                    性别  #第三列
+                </td>
+            </tr>
+
+            <tr>  #第二行
+                <td>
+                    abc  #第一列
+                </td>
+                <td>
+                    18  #第二列
+                </td>
+                <td>
+                    男  #第三列
+                </td>
+            </tr>
+        </table>
+        <ul>#标签--无序的，应用较多
+            <li>a</li>
+            <li>b</li>#标签内容
+        </ul>
+        <ol>#标签--有序的
+            <li>穿衣服</li>
+            <li>吃饭</li>
+            <li>出门</li>
+        </ol>
+        <a href="www.github.com">GitHub</a>#超链接-标识为GitHub，实际网站为href后面的网址
+    </body>
+</html>#带/的表示区域的结尾

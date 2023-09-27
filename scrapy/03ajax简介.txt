@@ -1,0 +1,45 @@
+ajax：前端向后端发送请求时需要用到的框架，特征--在headers里面有一个x-requested-with
+对于一个有很多页（需要往下翻才进行加载）的网站，每翻一页都会有一个不同的接口传入数据（它们的url不同）
+如果每一页都显示20条信息，第一页url的结尾就是start=0&limit=20，第二页是start=20&limit=20，第三页是start=40&limit=20...以此类推，start的值就是信息的位置，=(页数-1)*20，该结尾不是参数，不必用data=urllib.parse.urlencode(data).encode('utf-8')来进行修饰，直接拼接在base_url结尾即可，urlopen时也不必传入data
+def create_request(page):#获取请求
+    base_url="https://movie.douban.com/j/chart/top_list?type=5&interval_id=100%3A90&action=&"
+    data={
+        'start':(page-1)*20,
+        'limit':20
+    }
+    data=urllib.parse.urlencode(data)
+    url=base_url+data
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.69',
+    }
+    request=urllib.request.Request(url=url,headers=headers)
+    return request
+def get_content(request):#获取内容
+    response=urllib.request.urlopen(request)
+    content=response.read().decode('utf-8')
+    return content
+def down_load(page,content):#下载内容
+    with open('test_'+str(page)+'.json','w',encoding='utf-8') as fp:
+        fp.write(content)
+start_page=int(input("起始页码："))
+end_page=int(input("结束页码："))
+for page in range(start_page,end_page+1):#对于每一页都要访问
+    request=create_request(page)
+    content=get_content(request)
+    down_load(page,content)
+对于输出的.json文件，双击最外层[]后全选，按CTRL+alt+l可以变成分行的形式（更好看）
+
+有些包含多页的网站的数据展示不是通过改变url，而是在“负载/payload”或”headers中的form data“中的参数page_index中，这些页的url都相同，注意这里的page_index是post请求的参数，需要encode编码
+def create_request_new(page):
+    url="xxx"
+    data={
+        'page_index':page,
+        #其它参数也要传入
+    }
+    data=urllib.parse.urlencode(data).encode('utf-8')
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.69',
+    }
+    request = urllib.request.Request(url=url, headers=headers,data=data)
+    return request
+其它与上面相同

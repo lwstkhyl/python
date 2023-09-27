@@ -1,0 +1,64 @@
+需下载xpath插件（在浏览器上），以及python中的lxml库
+xpath解析：本地文件/服务器响应的数据，通常都直接解析响应数据
+
+本地文件的数据：创建文件main.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Title</title>
+</head>
+<body>
+    <ul>
+        <li id="l1" class="c1">a</li>
+        <li id="c2">b</li>
+        <li id="l3">c</li>
+    </ul>
+    <ul>
+        <li>A</li>
+        <li>B</li>
+        <li>C</li>
+    </ul>
+</body>
+</html>
+
+from lxml import etree
+#本地文件使用etree.parse，响应数据使用etree.HTML
+tree=etree.parse("main.html")
+#注意这里读取的HTML文件中每条语句都要有结束标识/，比如需要把<meta charset="UTF-8">改成<meta charset="UTF-8"/>才能正常读取
+#路径查询：tree.xpath('xpath路径')，xpath路径指的是html中的结构，//表示查找所有子孙节点，/是查找子节点
+li_list=tree.xpath('//body//ul/li')#查找body下的ul的li里面的内容,//body可省略
+#谓词查询
+li_list=tree.xpath('//ul/li[@id]')#查找所有有id属性的li标签
+li_list=tree.xpath('//ul/li[@id="l1"]')#查找id为l1的li标签（注意引号的问题）
+#属性查询
+li_list=tree.xpath('//ul/li[@id="l1"]/@class')#查找id为l1的li标签的属性值
+#模糊查询
+li_list=tree.xpath('//ul/li[contains(@id,"l")]')#查找id内包含l的li标签
+li_list=tree.xpath('//ul/li[starts-with(@id,"l")]')#查找id以l开头的li标签
+#逻辑运算
+li_list=tree.xpath('//ul/li[@id="l1" and @class="c1"]')#查找id为l1且属性值为c1的li标签
+li_list=tree.xpath('//ul/li[@id="l1" or @id="l2"]')#查找标签为l1或l2的li标签
+li_list=tree.xpath('//ul/li[@id="l1"]/text() | //ul/li[@id="l2"]/text()')#与上面等效
+#在tree.xpath('')里面最后加上/text()可输出内容
+li_list=tree.xpath('//ul/li[starts-with(@id,"l")]/text()')
+print(li_list)#输出['a', 'c']
+
+服务器响应的数据：获取百度网页里面的“百度一下”
+xpath插件的作用就是可以在网页端输入查询代码，看匹配项是否为自己想要的。在query中输入//input[@id="su"]/@value，就可以看到右面result里出现了“百度一下”，此时说明该查询代码正确，可以在python中使用
+#首先获取网页源码
+import urllib.request
+url='https://www.baidu.com/'
+headers={
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.69'
+}
+request=urllib.request.Request(url=url,headers=headers)
+response=urllib.request.urlopen(request)
+content=response.read().decode('utf-8')
+#解析网络源码--
+from lxml import etree
+tree=etree.HTML(content)
+result=tree.xpath("//input[@id='su']/@value")#返回值是一个列表
+print(result[0])#输出第一个元素，即”百度一下“
+
+要下载https://sc.chinaz.com/tupian/fengjing.html的前n页图片，特征为第一页为/fengjing.html，第二页是/fengjing_2.html，第三页是/fengjing_3.html（即除了第一页都是_n）

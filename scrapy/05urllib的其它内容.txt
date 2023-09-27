@@ -1,0 +1,58 @@
+cookie登录：适用场景-在数据采集时，需绕过登录，然后进入到某个页面
+现在想访问登录后的个人信息界面
+import urllib.request
+url='https://weibo.com/u/6018881887'
+headers={
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.69'
+}
+request=urllib.request.Request(url=url,headers=headers)
+response=urllib.request.urlopen(request)
+content=response.read().decode('utf-8')#已知个人信息界面是utf-8编码（查看编码：检查->源代码->双击网页文件->"meta charset="
+此时会报错，因为没有进入到个人信息界面，而是跳转到了登录界面，登录界面不是utf-8编码，而是gb2312编码
+改成content=response.read().decode('gb2312')，但是内容不是个人信息界面，而是登录界面
+检查个人信息界面，点开6018881887文件，在标头下的cookie是登录成功的关键，需要加到headers中
+其它的标头功能：referer-判断当前路径是不是由上一个路径进来的，一般用于做图片的防盗链，有时需要加上
+headers={
+    'User-Agent': 'xxx',
+    'Cookie':'xxx',
+    'Referer':'xxx'
+}
+
+handler处理器，定制更高级的请求头，当每次cookie都不相同时就需要进行定制，总共分为三步
+import urllib.request
+url='http://www.baidu.com'
+headers={
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.69'
+}
+request=urllib.request.Request(url=url,headers=headers)
+handler=urllib.request.HTTPHandler()#获取handler对象
+opener=urllib.request.build_opener(handler)#获取opener对象
+response=opener.open(request)#调用open方法
+#代替了response=urllib.request.urlopen(request)
+content=response.read().decode('utf-8')
+print(content)
+
+代理：当一个IP访问同一个网站，访问速度过快时就容易被封禁IP，常用于访问学校/单位的内部网、提高访问速度和隐藏真实IP
+得到自己网络的IP：直接浏览器里面输入IP，就可以看到
+import urllib.request
+url='http://www.baidu.com/s?wd=ip'
+headers={
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.69'
+}
+request=urllib.request.Request(url=url,headers=headers)
+proxies={#浏览器里面搜“快代理”，找到一个IP
+    'http':'114.231.8.225:8888'
+}#'http'为端口类型，114.231.8.225是IP，8888是端口(port)
+handler=urllib.request.ProxyHandler(proxies=proxies)#将proxies参数传入
+opener=urllib.request.build_opener(handler)
+response=opener.open(request)
+content=response.read().decode('utf-8')
+#此时再用http://www.baidu.com/s?wd=ip查找IP，显示就为代理的IP地址
+
+代理池：存放很多代理的列表，访问网页时随机选择一个IP代理进行访问，避免同一IP连续访问被封
+import random
+proxies_pool=[
+    {'http': '114.231.8.225:8888'},
+    {'http': '114.231.8.226:8889'}
+]
+proxies=random.choice(proxies_pool)

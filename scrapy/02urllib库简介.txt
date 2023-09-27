@@ -1,0 +1,91 @@
+对爬虫的解释：通过一个程序，根据网址浏览网页，获取有用信息；使用程序去模拟浏览器，向服务器发送访问请求来获取信息
+核心：先爬取整个网页，包含网页中所有内容；再解析数据，将得到的数据进行筛选，最后剩下想要的信息
+分类：通用爬虫和聚焦爬虫
+通用爬虫--如搜索引擎，抓取的数据大多无用，且不能根据需求来获取数据
+聚焦爬虫--根据需求来获取数据，设计思路：确定要爬取的url（网址），模拟浏览器通过HTTP协议访问url，获取服务器返回的HTML代码，最后解析HTML字符串
+
+urllib库的基本使用：
+import urllib.request
+#使用urllib获取网页源码（在联网的前提下）
+url='http://www.baidu.com'#定义一个url，值为要访问的地址
+response=urllib.request.urlopen(url)#模拟浏览器向服务器发送请求，返回值为浏览器返回的信息
+content=response.read()#获取响应中的页面的源码，返回字节形式的二进制数据
+content=content.decode("UTF-8")#解码：把二进制变为字符串
+print(content)
+
+在输出栏中按CTRL+f可以进入搜索界面，搜索栏中输入的字符串会在输出栏中高亮
+
+一个类型和六个方法：HTTPResponse类型、read readline readlines getcode geturl getheaders方法
+print(type(response))  -><class 'http.client.HTTPResponse'> response是HTTPResponse类型
+content=response.read()  按照一字节一字节的方法去读（速度慢）
+content=response.read(num)  读5个字节，只输出前5个字节的源码
+content=response.readline()  读取一行，只输出前一行内容
+content=response.readlines()  一行一行的读，输出全部内容
+print(response.getcode())  返回状态码，若输出200就代表逻辑正常
+print(response.geturl())  返回url地址
+print(response.getheaders())  返回状态信息
+
+下载网址/图片/视频：
+url_page='http://www.baidu.com'
+urllib.request.urlretrieve(url_page,'baidu.html')#下载网页，将其保存为baidu.html；如果将网页地址换成图片的网址，就可以下载图片.jpg/视频.mp4
+#或urllib.request.urlretrieve(url=url_page,filename='baidu.html')
+获取视频地址：在视频页中点击检查->代码页中左上角小箭头->定位行中src=后面的网址
+pycharm中没有本地播放器，需要找到python存储文件本地打开
+
+url网址的组成：协议-http或https（其中https更加安全）、主机/域名-www.abc.com、端口号、路径、参数、锚点
+url='https://www.baidu.com'#注意是https
+response=urllib.request.urlopen(url)
+content=response.read().decode('utf8')
+print(content)  此时输出的内容不正常，因为https带有反爬功能，而现在的url不完整，被网站拒绝访问
+UA-user agent用户代理：是一个特殊的字符串头，使服务器能识别用户使用的操作系统、CPU类型、浏览器版本、内核等等，我们需要找到UA来使url完整
+
+找到UA：打开浏览器界面，右键->检查->network->刷新页面->点击name下的网址->在headers下可以找到UA
+url='https://www.baidu.com'
+headers={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.69'}
+#定制一个url
+request=urllib.request.Request(url=url,headers=headers)#因为urlopen方法不能传字典，所以创造一个request类型对象，注意这里只能关键字传参
+response=urllib.request.urlopen(request)
+content=response.read().decode('utf8')
+print(content)  此时可以正常打开https网址
+
+搜索”pycharm怎么改下载文件的存储位置“--Unicode编码：
+#url='https://www.baidu.com/s?wd=pycharm怎么改下载文件的存储位置'#报错，因为网址中的中文使用Unicode编码，而现在默认是utf-8
+url='https://www.baidu.com/s?wd='
+question=urllib.parse.quote('pycharm怎么改下载文件的存储位置')#将问题转换为Unicode编码
+url+=question
+headers={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.69'}
+request=urllib.request.Request(url=url,headers=headers)
+response=urllib.request.urlopen(request)
+content=response.read().decode('utf8')
+print(content)
+
+get请求的urlencode方法：
+对于’https://www.baidu.com/s?wd=周&sex=男‘这样有多个汉字的网址，拼接就很麻烦
+base_url='https://www.baidu.com/s?'
+data={
+    'wd':"周",
+    'sex':"男"
+}
+data=urllib.parse.urlencode(data)#代替“wd=周&sex=男”（会将逗号转成网址中的&、冒号转成=）
+url=base_url+data  得到最后的可以访问的网址
+
+post请求--百度翻译
+在翻译网页中输入spider，会看到翻译结果，这个结果由网页代码的sug显示，这个翻译过程就是一个post请求，而spider是post请求的参数
+post请求的参数必须要进行编码（使用urllib.parse.urlencode），且不拼接在url后面，而是在request函数中单独传入；需要编码（调用encode方法），不能以str类型传入
+url='https://fanyi.baidu.com/sug'
+data={
+    'kw':'spider'
+}
+data=urllib.parse.urlencode(data).encode('utf-8')
+headers={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.69'}
+request=urllib.request.Request(url=url,headers=headers,data=data)
+response=urllib.request.urlopen(request)
+content=response.read().decode('utf8')#content是json类型的字符串对象
+json_content=json.loads(content)#将字符串对象转为json对象
+print(json_content)#此时可输出正常内容
+
+post请求--百度详细翻译
+在检查参数中找到v2transapi?from=en&to=zh，点击“负载/payload”，表单数据里面的内容就是参数，都需要进行传入
+如果这时候仍然报错，就需要将标头/headers里面的请求标头/request headers中的数据全部作为headers传入（也需写成'xxx':'xxxxx'的格式）
+快速替换：按CTRL+r，上面选择正则表达式，输入 (.*):(.*) ，下面输入 '$1':'$2', ，即可
+有的网站只需要headers中的cookie参数
