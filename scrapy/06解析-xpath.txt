@@ -61,4 +61,14 @@ tree=etree.HTML(content)
 result=tree.xpath("//input[@id='su']/@value")#返回值是一个列表
 print(result[0])#输出第一个元素，即”百度一下“
 
-要下载https://sc.chinaz.com/tupian/fengjing.html的前n页图片，特征为第一页为/fengjing.html，第二页是/fengjing_2.html，第三页是/fengjing_3.html（即除了第一页都是_n）
+要下载https://sc.chinaz.com/tupian/fengjing.html的前n页图片，特征为第一页为/fengjing.html，第二页是/fengjing_2.html，第三页是/fengjing_3.html（即除了第一页都是_n），其中图片部分的源码为
+ <div class="item">
+          <img src="../static/common/com_images/img-loding.png"
+            style="height: 123px"
+            data-original="//scpic1.chinaz.net/files/default/imgs/2023-05-23/6f11f0b9c51fe495_s.jpg"#图片源码
+            class="lazy"
+            alt="冬季南极洲风光摄影图片"#图片名称
+          />
+注意：<div class="item">可能不是第一个层次，但只要加上//就能直接获取到这一层次，即//div[@class='item']/img/@data-original就是图片源码
+源码见.py文件
+
