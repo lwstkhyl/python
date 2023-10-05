@@ -1,0 +1,41 @@
+和xpath很类似，都可以解析本地或html数据
+from bs4 import BeautifulSoup
+soup=BeautifulSoup(open('main.html',"r",encoding='utf-8'),'lxml')#使用lxml内核进行解析
+#根据标签名字查找节点，找到的是第一个符合条件的数据
+print(soup.a)#返回第一个a的标签<a href="abc"></a>
+print(soup.a.attrs)#attrs返回的是标签属性{'href': 'abc'}
+#bs4的三个函数find、find_all、select
+#find函数返回第一个符合条件的数据
+print(soup.find('a',title="123",class_="a2"))#找title为123、class为A的a标签，注意class要加下划线，因为class本身在python中有意义
+#find_all函数返回全部符合条件的数据，是一个列表
+print(soup.find_all(['a','span']))#返回所有的a和span标签，注意a和span需放在列表中
+print(soup.find_all('li',limit=2))#只返回前2个li标签
+#select函数返回全部符合条件的数据，是一个列表（推荐使用）
+print(soup.select('.a1'))#返回class为a1的标签，其中.代表class_=，称为类选择器
+print(soup.select('#l1'))#返回id为l1的标签，其中#代表id（属性选择器）
+print(soup.select('li[id]'))#返回li中有id的标签
+print(soup.select('li[id="l2"]'))#返回li中id为l2的标签
+print(soup.select('a,li'))#返回所有的a和span标签，同find_all(['a','span'])
+#层级选择器
+print(soup.select('div li'))#后代选择器，返回div下的所有li标签
+print(soup.select('div>ul>li'))#子代选择器，返回div子代的ul的li，结果同上句
+#节点信息
+obj=soup.select('#d1')[0]#第一个id为d1的标签
+print(obj.string)#输出None
+print(obj.get_text())#输出a b c d
+#如果标签对象中只有内容，没有其它标签，用string就能获取到；如果有标签，就只有gettext能获取
+obj=soup.select('#p1')[0]
+print(obj.name,obj.attrs,obj.attrs.get('class'))#name:标签的名字，attrs:将属性值作为字典返回，get('class'):获取class值
+#obj.attrs.get('class')等效于obj.get('class')等效于obj['class']
+
+案例：获取https://www.starbucks.com.cn/menu/中的名称
+import urllib.request
+url='https://www.starbucks.com.cn/menu/'
+response=urllib.request.urlopen(url)
+content=response.read().decode('utf-8')
+from bs4 import BeautifulSoup
+soup=BeautifulSoup(content,'lxml')
+#使用xpath插件可知该name_list的xpath语句为//ul[@class='grid padded-3 product']//strong
+name_list=soup.select('ul[class="grid padded-3 product"] strong')#此时使用.grid padded-3 product会出错，于是使用这种写法
+for i in name_list:
+    print(i.get_text())

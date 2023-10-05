@@ -1,0 +1,57 @@
+jsonpath解析只能解析本地文件，所以在目录下创建json文件
+{
+	"store": {
+		"book": [{
+				"category": "reference",
+				"author": "Nigel Rees",
+				"title": "Sayings of the Century",
+				"price": 8.95
+			}, {
+				"category": "fiction",
+				"author": "Evelyn Waugh",
+				"title": "Sword of Honour",
+				"price": 12.99
+			}, {
+				"category": "fiction",
+				"author": "Herman Melville",
+				"title": "Moby Dick",
+				"isbn": "0-553-21311-3",
+				"price": 8.99
+			}, {
+				"category": "fiction",
+				"author": "J. R. R. Tolkien",
+				"title": "The Lord of the Rings",
+				"isbn": "0-395-19395-8",
+				"price": 22.99
+			}
+		],
+		"bicycle": {
+			"color": "red",
+			"price": 19.95
+		}
+	}
+}
+
+import jsonpath
+import json
+obj=json.load(open("json_path.json","r",encoding='utf-8'))
+author_list=jsonpath.jsonpath(obj,"$.store.book[*].author")#读取所有书的作者
+#$代表根目录，.获取子节点（xpath中的/），*获取所有节点
+#如果要读取第一本书就是book[0]
+all_author_list=jsonpath.jsonpath(obj,"$..author")#所有的作者
+#..代表递归搜索（xpath中的//）
+all_list=jsonpath.jsonpath(obj,'$.store.*')#store下的所有元素
+price_list=jsonpath.jsonpath(obj,'$.store..price')#所有的price，注意此处的..不能只写一个.
+book_3=jsonpath.jsonpath(obj,'$..book[2]')#第三本书
+book_last=jsonpath.jsonpath(obj,'$..book[(@.length-1)]')#最后一本书
+#@代表当前节点，()为过滤器表达式，@.length就是$..book的长度（这个list中元素的个数）
+#也可以写成$..book[-1:]
+book_12=jsonpath.jsonpath(obj,'$..book[0,1]')#前两本书
+#也可以写成$..book[:2]，类似列表的切片操作
+book_isbn=jsonpath.jsonpath(obj,'$..book[?(@.isbn)]')#所有有ISBN的书
+#条件过滤，需要在()前加上?
+book_price=jsonpath.jsonpath(obj,'$..book[?(@.price>10)]')#所有价格>10的书
+#使用json.cn网站可以验证jsonpath表达式是否正确
+
+案例：解析淘票票https://dianying.taobao.com
+源码见.py文件
