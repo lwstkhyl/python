@@ -1,0 +1,72 @@
+有些网页必须使用selenium模拟真实的浏览器才能进行访问，或者说拿到某些数据
+pycharm中安装3.141.0版本的selenium包和1.26.2的urllib3（若之前有就重装），下载chrome浏览器（https://www.google.cn/chrome/next-steps.html），以及对应版本的chromedriver（chrome浏览器为117版本及以上的见https://blog.csdn.net/weixin_45338308/article/details/132847878，旧版本见http://chromedriver.storage.googleapis.com/index.html），之后将下载的zip文件（中的.exe）解压到要使用chromedriver的python项目文件夹中
+
+执行以下代码
+from selenium import webdriver
+path='chromedriver.exe'
+driver = webdriver.Chrome(path)
+driver.get('https://www.baidu.com')
+若能正常打开一个新网页就安装成功
+
+
+selenium的元素定位：模拟鼠标和键盘来操作（点击、输入等）元素，操作元素首先要找到它们
+如果想找到https://www.baidu.com中的“百度一下”输入框，就直接对着“百度一下”的按钮右键检查，可获得该input的属性为<input type="submit" value="百度一下" id="su" class="btn self-btn bg s_btn">和<input id="kw" name="wd" class="s_ipt" value maxlength="255" autocomplete="off">
+
+button=browser.find_element_by_id('su')#根据标签属性值id来找对象
+button=browser.find_element_by_name('wd')#根据标签属性值name
+button=browser.find_element_by_xpath('//input[@id="su"]')#根据xpath语句来找
+button=browser.find_elements_by_tag_name('input')#根据标签名
+button=browser.find_element_by_css_selector('#su')#根据bs4语句
+button=browser.find_element_by_link_text('直播')#获取指定名称的链接（就是鼠标放上去会变成小手图标的），名称就是网页上看到的按钮上的文本
+#find_elements是找所有符合条件的对象，如果符合条件的对象有多个就只能用find_elements，不加s会输出none
+
+selenium的元素信息：获取元素的属性值和文本
+input=browser.find_element_by_id('su')
+print(input.get_attribute('class'))#获取class属性值
+print(input.tag_name)#获取标签名
+print(input.text)#获取元素文本（<>和</>之间的内容，<>内的都算属性值
+
+selenium的交互：用代码实现网页的滚动/后退等操作，适用于当网站需要滚动到底部才继续加载等情况
+from selenium import webdriver
+import time
+path='chromedriver.exe'
+browser = webdriver.Chrome(path)
+url='https://www.baidu.com'
+browser.get(url)
+time.sleep(1)#让过程看的更清楚，不睡眠也行
+input=browser.find_element_by_id('kw')#找到文本框
+input.send_keys("周杰伦")#在文本框中输入想查询的内容
+time.sleep(1)
+button=browser.find_element_by_id('su')#找到“百度一下”按钮
+button.click()#点击按钮
+time.sleep(1)
+js_bottom='document.documentElement.scrollTop=100000'#一个位置-距离顶部100000格的地方（固定写法，一般100000就可以了）
+browser.execute_script(js_bottom)#划到指定位置
+time.sleep(1)
+next_button=browser.find_element_by_xpath('//a[@class="n"]')#找到“下一页”的按钮
+next_button.click()
+time.sleep(1)
+browser.back()#回到上一页（浏览器中的后退按钮）
+time.sleep(1)
+browser.forward()#回到back前的界面（浏览器中的前进按钮）
+time.sleep(1)
+browser.refresh()#刷新界面
+time.sleep(1)
+browser.quit()#退出
+
+
+selenium下的插件1：phantomjs是一个无界面的浏览器，支持页面元素查找、js执行等，不进行css和gui渲染，因此运行效率更快，可以在https://phantomjs.org/download.html进行下载，之后将里面的phantomjs.exe粘贴到项目文件路径下
+from selenium import webdriver
+path='phantomjs.exe'
+browser = webdriver.PhantomJS(path)
+url='https://www.baidu.com'
+browser.get(url)#单独执行打开网页操作是不会弹出界面的，因为phantomjs是无界面的
+browser.save_screenshot('baidu.png')#使用此命令可以拍下打开网页的截图，存在项目目录中的baidu.png
+#之后想进行交互操作，与之前直接使用selenium完全相同
+
+selenium下的插件2：chrome handless在不打开ui界面的情况下使用chrome浏览器，需要python3.6以上版本，selenium>=3.4.x，因为phantomjs已停更，所以现使用较多
+from chrome_handless import share_browser#因为使用chromehandless时有固定的配置，所以封装成函数，函数见.py文件
+browser=share_browser()
+url='https://www.baidu.com'
+browser.get(url)
+browser.save_screenshot('baidu.png')

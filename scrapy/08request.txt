@@ -1,0 +1,114 @@
+安装2.26.0版本requests包
+import requests
+url='http://www.baidu.com'
+response=requests.get(url=url)
+#一个类型和六个属性
+print(type(response))#<class 'requests.models.Response'>
+response.encoding='utf-8'#设置响应的编码格式
+print(response.url)#返回url路径
+print(response.text)#获取网页源码（以字符串的形式）
+print(response.content)#以二进制的方式返回源码（相当于urllib的read方法），因此不常用
+print(response.status_code)#返回状态码
+print(response.headers)#获取响应头
+
+get请求：在百度中搜索“北京”
+import requests
+url='http://www.baidu.com/s'
+headers={
+    'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.69'
+}
+data={
+    'wd':"北京"
+}
+#get方法的三个参数：url-请求资源路径 params-参数 kwargs-字典
+response=requests.get(url=url,params=data,headers=headers)
+response.encoding='utf-8'
+content=response.text
+print(content)
+特点：参数使用params传递，参数无需urlencode编码，不需要请求对象的定制，请求资源路径中的?可有可无，即url='http://www.baidu.com/s'或url='http://www.baidu.com/s?'都可
+注意：get方法传参是params=data而不是data=data
+
+post请求：仍然以百度翻译为例
+import requests
+url='https://fanyi.baidu.com/sug'
+headers={
+    'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36 Edg/118.0.2088.46',
+}
+data={
+    'kw':'eye'
+}
+response=requests.post(url=url,data=data,headers=headers)
+response.encoding='utf-8'
+content=response.text
+import json
+obj=json.loads(content)
+print(obj)
+
+代理：
+import requests
+url='http://www.baidu.com/s?'
+headers={
+    'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36 Edg/118.0.2088.46',
+}
+data={
+    'wd':'ip'
+}
+proxy={
+    'http':'121.230.210.31:3256'
+}   #添加代理
+response=requests.get(url=url,params=data,headers=headers,proxies=proxy)
+response.encoding='utf-8'
+content=response.text
+with open('daili.html','w',encoding='utf-8') as fp:
+    fp.write(content)
+
+
+cookie登录：以古诗文网为例，通过登录进入到主页面，登录时需要输入验证码
+1、寻找登录接口：输入账号和密码，点击登录，检查页面网络下以login开头.aspx结尾的文件就是，在它的负载中找到表单数据formdata，有如下内容，这就是登录成功的依据
+__VIEWSTATE:xxx
+__VIEWSTATEGENERATOR:
+from: http://so.gushiwen.cn/user/collect.aspx
+email: 595165358@qq.com
+pwd: action
+code: l9su
+denglu: 登录
+其中__VIEWSTATE、__VIEWSTATEGENERATOR和code（验证码）是一个可以变化的量，而前两个以__开头的量在界面中不可见->应在网页的源代码中。解析源码，就可以获得它们的值，从而登录
+
+2、寻找隐藏值
+已知隐藏值的源码部分为
+<div>
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="xxx" />
+</div>
+<div>
+<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="C93BE1AE" />
+</div>
+使用bs4，路径为soup.select('#__VIEWSTATE')[0].attrs.get('value')
+
+3、获取验证码
+右键验证码->检查，可以找到源码为
+<img id="imgCode" style="cursor: pointer; float:left; margin-left:5px; margin-top:1px;" width="60" height="27" src="https://so.gushiwen.cn/RandCode.ashx?t=1697639614866?t=1697639639693?t=1697639640409" onclick="GetCodeImg()" alt="看不清，换一张">
+code=soup.select('#imgCode')[0].attrs.get('src')
+code_url="https://so.gushiwen.cn"+code#完整的验证码url
+#import urllib.request
+#urllib.request.urlretrieve(url=code_url,filename='code.jpg')#将验证码下载到本地
+注意这种获取验证码的方法虽然能出结果，但不能使用。因为这是urllib.request方法单独获取的，而正常是要获取登录时的验证码
+因此使用requests里面的session方法，使网页请求变为同一个对象
+session=requests.session()
+response_code=session.get(code_url)#获取验证码url的内容
+content_code=response_code.content#注意此时要使用二进制数据content，而非utf-8编码后的text，因为我们要使用的是图片的下载
+with open('code.jpg','wb') as fp:#'wb'模式就是将二进制数据写入到文件
+    fp.write(content_code)
+code_name=input('验证码：')#输入验证码
+
+4、使用登录接口进行登录--查看登录接口标头中的请求方法，为post
+data_post={
+    "__VIEWSTATE":viewstate,
+    "__VIEWSTATEGENERATOR":viewstategenerator,
+    "from": "http://so.gushiwen.cn/user/collect.aspx",
+    "email": "1271943237@qq.com",
+    "pwd": "111111",
+    "code":code_name,
+    "denglu":""
+}
+response_post=session.post(url=url,headers=headers,data=data_post)#使用同一个对象session进行登录，确保验证码与本次登录匹配
+content_post=response_post.text#登录后的网站源码
