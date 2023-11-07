@@ -1,0 +1,162 @@
+pycharm中安装scrapy包
+在想创建项目的文件夹中打开终端，输入scrapy startproject 项目名（不能有中文，不能以数字开头），如scrapy startproject scrapy_test，进入到scrapy_test中的spiders文件夹下，在其中打开终端，输入scrapy genspider 想创建的py文件名 想爬取的网站url（不加http://），如输入scrapy genspider baidu www.baidu.com，就可以在spiders文件夹中生成baidu.py
+import scrapy
+class BaiduSpider(scrapy.Spider):
+    name = 'baidu'#name是爬虫的名字，当运行爬虫时使用
+    allowed_domains = ['www.baidu.com']#允许访问的域名
+    start_urls = ['http://www.baidu.com/']#完整的url（在域名前加上http://，后面加上一个/）
+#注意：如果想爬的接口是以html为结尾的，在创建的爬虫py文件中start_urls是不能以/结尾的（需要把/删去）
+    def parse(self, response):#是执行start_urls后调用的方法，方法中的response就是response=urllib.request.urlopen()或response=requests.get()中的response
+        print("执行baidu爬虫")
+在同位置的终端中输入scrapy crawl 爬虫名字 就可以执行创建出来的爬虫程序，如scrapy crawl baidu就可以执行上述代码，不能执行可参见https://blog.csdn.net/m0_63636799/article/details/132766525，输出的最后一行应为[scrapy.core.engine] INFO: Spider closed (finished)，但此时还不能爬取成功，因为出现DEBUG: Forbidden by robots.txt，说明robots协议阻止了这次爬取
+修改：打开scrapy_test中的settings.py，将里面的ROBOTSTXT_OBEY = True注释掉，再次打开运行爬虫，可以看到"执行baidu爬虫"的输出
+
+scrapy项目的结构：
+scrapy_test文件夹中-
+   init.py
+   items.py--定义数据结构，即爬取的数据都包含哪些
+   middlewares.py--中间件，即代理
+   pipelines.py--管道，用来处理下载的数据
+   settings.py--配置文件，包含robots协议、ua定义等
+   spiders文件夹中--
+      init.py
+      baidu.py--自定义的爬虫文件，是核心功能文件，最重要
+
+response的属性和方法：
+response.text--获取网页源码（字符串形式）
+response.body--获取网页源码（二进制格式）
+response.url--网址
+response.status--状态码
+response.xpath("xpath格式语句")--直接调用xpath对源码进行解析
+response.extract()--提取selector对象的data属性值，返回一个列表，该列表存储xpath路径对应的结果
+response.extract_first()--提取selector列表的第一个数据，即将.extract()列表中的第一个元素返回（通常使用）
+
+以http://car.autohome.com.cn/price/brand-15.html为例，创建爬虫car，生成car.py:
+想要获取汽车名称以及对应的价格
+    def parse(self, response):
+        name_list = response.xpath('//div[@class="main-title"]/a/text()')
+        price_list = response.xpath('//div[@class="main-lever"]//span[@class="font-arial"]/text()')
+        for i in range(len(name_list)):
+            name = name_list[i]
+            price = price_list[i]
+            #     print(name)
+            # 此时输出<Selector query='//div[@class="main-title"]/a/text()' data='宝马3系'>的形式
+            print(name.extract(),":",price.extract())  # 此时直接输出“宝马3系”的形式
+
+spider的架构组成：
+（1）引擎--自动运行，自动组织请求对象，分发给下载器等结构，相当于数据枢纽
+（2）下载器--从引擎处获取请求对象后，请求数据
+（3）spiders--该类定义如何爬取给定网站
+（4）调度器--无需关注，有自己的规则
+（5）管道--最终处理数据，预留接口给我们处理数据
+spider的工作原理：
+（1）spiders发生url给引擎；引擎把url给调度器；调度器将url变成请求对象，并放入指定队列中；队列中处一个请求给引擎；引擎将请求给到下载器；下载器发送请求，去互联网中下载数据；下载的数据（即代码中的response）传给引擎；引擎转发给spiders
+（2）spiders通过xpath等解析数据，解析结果传给引擎；若结果是数据类型，就传给管道进行存储，若结果是url，就继续给调度器重复之前的操作
+
+scrapy shell--是scrapy终端，可以在未启动spider的情况下调试代码，不需要每次修改后都运行一次spider
+安装ipython包后，在终端中输入ipython，即可进入ipython界面，输入exit()退出ipython环境
+退出ipython，在终端中输入scrapy shell 网站域名 （如scrapy shell www.baidu.com）即可进入scrapy终端中，此时可以看到已经自动进入ipython环境，此时可以直接操控response等对象
+a = response.xpath('//input[@id="su"]/@value')
+a.extract_first() #获取xpath路径结果的第一个元素
+
+
+例1：获取当当网上书的图片、名称、价格数据，此案例将介绍item.py   的具体用法
+创建ddw的爬虫对象，使用category.dangdang.com/cp01.01.02.00.00.00.html的url，注意要删去ddw.py后的/
+
+1、item.py中有一个类，用来描述要下载的数据都有什么:
+import scrapy
+class ScrapyDangdangwangItem(scrapy.Item):
+    src = scrapy.Field() #书的图片url
+    name = scrapy.Field() #名称
+    price = scrapy.Field() #价格
+
+2、查找xpath路径--获取基础数据
+src : //ul[@id="component_59"]//li//img/@src
+alt : //ul[@id="component_59"]//li//img/@alt
+price : //ul[@id="component_59"]//li//p[@class="price"]/span[1]/text()
+注意到它们都以//ul[@id="component_59"]//li开头，于是可以在ddw.py的def parse(self, response)下写：
+        li_list = response.xpath('//ul[@id="component_59"]//li')#获取所有的li标签，得到selector对象
+        for li in li_list:#每个li都存储着一本书的图片、名字和价格
+            src = li.xpath('.//img/@src').extract_first()#所有的selector对象都可以再次调用xpath方法
+            name = li.xpath('.//img/@alt').extract_first()#注意xpath路径中的.很重要，若不加就相当于直接src=//ul[@id="component_59"]//li//img/@src
+            price = li.xpath('.//p[@class="price"]/span[1]/text()').extract_first()
+            print(src,name,price)#src name price分别是一本书的，循环输出全部书的属性
+此时运行得到的结果中，第2-60个src均为images/model/guan/url_none.png，可知网页设置了懒加载
+再次检查网页源码，找到最后一本书的<img src>处，发现为<img data-original="//img3m9.ddimg.cn/45/19/25347609-1_b_16.jpg" src="images/model/guan/url_none.png" ...>，于是当懒加载时，我们用@data-original代替@src
+但是第一张图片无data-original，需使用src，在前述代码中添加:
+            if src:#如果src不为空（即使用data-original可以获取图片）就不作处理
+                pass
+            else:#如果src为空（即是第一张图片，无data-original）
+                src = li.xpath('.//img/@src').extract_first()#就用@src进行获取
+
+3、管道封装
+（1）使用先前创建的item类，需在ddw.py中添加from scrapy_dangdangwang.items import ScrapyDangdangwangItem，继续在循环中添加book = ScrapyDangdangwangItem(src=src,name=name,price=price)
+（2）我们需要将这个book对象交给管道进行处理，且每次循环都要给一次，于是使用yield关键字--类似于return，返回一个值，并记住返回值的位置，下次迭代就从这个位置的下一行开始。接着在book对象创建后加上 yield book
+（3）如果想使用管道，必须在settings.py中将ITEM_PIPELINES = {...}取消注释
+管道可以有很多个，是由优先级的，范围为1-1000，值越小优先级越高，上面大括号里面的300就是这条管道的优先级
+在pipelines.py中更改class ScrapyDangdangwangPipeline为:
+class ScrapyDangdangwangPipeline:#此条管道用来下载所有数据
+    def open_spider(self,spider):#在爬虫执行前执行的函数，注意函数名不能写错，因为该写法相当于重写已提供的函数
+        self.fp = open('book.json','w',encoding='utf-8')#只打开一次文件，不存在被覆盖写入的问题，原方法写一次就关一次文件，再次打开文件进行写入时会覆盖原内容
+    def process_item(self, item, spider):#item就是yield后面的book对象
+        # with open('book.json','a',encoding='utf-8') as fp:#将book数据存储到json文件中，注意'w'是覆盖写入，需要用追加'a'
+        #     fp.write(str(item))#write必须是字符串对象
+        #以上这种模式不推荐，因为每传递一个book就打开一次文件，对文件的操作过于频繁
+        self.fp.write(str(item))#写入的本质是将内容以追加的方式写入缓冲区，在文件关闭时将缓冲区内容追加/覆盖写入文件中
+        return item#函数本身的返回值（不能更改）
+    def close_spider(self,spider):#同open_spider，是在爬虫文件执行完后执行的方法
+        self.fp.close()#只关闭一次文件，此时缓冲区已存储全部book数据。注意self.fp也不能写错（也是内置重写）
+
+4、多条管道同时开启：
+首先定义管道类--在pipelines.py中新建class:
+class Dangdangwang_downloadPipeline:#用来下载图片
+    def process_item(self, item, spider):
+        url = 'http:'+item.get('src')#item对象在items.py中定义，以字典形式存储数据，因此上面str(item)是一个json数据，而此处也能使用get方法由键获取值。注意item里面的url没加http头，要补上
+        file_name = './books/'+item.get('name')+'.jpg'#存储在books文件夹下
+        urllib.request.urlretrieve(url=url,filename=file_name)
+        return item
+之后还需在settings.py中开启--在ITEM_PIPELINES中添加:
+'scrapy_dangdangwang.pipelines.Dangdangwang_downloadPipeline': 301
+注意文件夹需要自己创建
+
+5、多页数据下载：
+观察到第一页的url为category.dangdang.com/cp01.01.02.00.00.00.html或者category.dangdang.com/pg1-cp01.01.02.00.00.00.html
+第二页为category.dangdang.com/pg2-cp01.01.02.00.00.00.html
+第三页为category.dangdang.com/pg3-cp01.01.02.00.00.00.html
+即只在中间添加了pgn-
+在ddw.py的类定义里parse函数前添加:
+    base_url = 'category.dangdang.com/pg'
+    base_url2 = '-cp01.01.02.00.00.00.html'
+    page = 1
+
+因为每页数据的结构都相同，所以只需将要爬取的另一页的请求再次调用ddw.py里的parse方法即可 
+调用parse--使用scrapy.Request方法，在parse函数内添加:
+        if self.page<100:#共爬取100页
+            self.page = self.page+1#注意要加self.
+            url = self.base_url1+str(self.page)+self.base_url2
+            yield scrapy.Request(url=url,callback=self.parse)#url就是请求地址，callback是要执行的函数（不需要加括号）
+
+最后更改类中的allowed_domains为['category.dangdang.com']，否则除了第一页都不在允许范围内
+
+
+例2：获取电影天堂网站中电源的名称，以及点击电源名称后进去的网页中的图片地址，将这两个定义为一个item对象
+http://www.dytt8.net/html/gndy/china/index.html，注意删去结尾/
+关键：多层次网址的爬取--将第一次爬取到的url作为下一次爬取的url，并赋予不同的处理逻辑
+def parse(self, response):
+        a_list = response.xpath('//div[@class="co_content8"]//td[2]//a[2]')
+        for a in a_list:
+            name = a.xpath('./text()').extract_first()
+            href = a.xpath('./@href').extract_first()
+            url = "http://www.dytt8.net"+href
+            yield scrapy.Request(url=url,callback=self.parse_second,meta={'first_name':name})
+需自定义另一个函数写入新的处理逻辑，使用meta可以将第一步爬取的信息传给下一步构造对象（以字典形式）
+    def parse_second(self,response):
+        src = response.xpath('//div[@id="Zoom"]//img/@src').extract_first()
+        name = response.meta['first_name']#接收上面传过来的name
+        movie = ScrapyMovieItem(src=src,name=name)
+        yield movie#将最终的movie返回给管道
+
+源码见文件
+出现Connection to the other side was lost in a non-clean fashion报错：若url为https://开头就改成http://，若原来是https://就改成http://
+
+
