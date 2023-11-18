@@ -1,0 +1,74 @@
+链接提取器crawlSpider继承自scrapy.spider，在解析网页源码时，可以根据自定义的规则提取处指定的链接，然后再向这些链接发送请求。当需要爬取某个网页后 再提取其中的链接进行爬取时，就可以使用它。链接提取器的函数为
+link = LinkExtractor(
+  allow='' #输入一个正则表达式，提取符合它的链接
+  deny='' #输入一个正则表达式，提取不符合它的链接（一般不用）
+   allow_domains=() #允许的域名（一般不用）
+   deny_domains=() #不允许的域名（一般不用）
+   restrict_xpaths=() #输入一个xpath，提取符合它的链接
+   restrict_css=() #输入一个css路径，提取符合它的链接
+)
+下面以读书网https://www.dushu.com/book/1188.html为例介绍使用方法
+
+观察到页数的url为/book/1188_1.html /book/1188_2.html ...只有1188_后的数字不一样，可使用正则表达式进行提取，/book/1188_直接作限定条件，1至多位数字使用\d+，.html变为\.html（转义字符）
+页数对应url的xpath为//div[@class="pages"]/a/@href
+
+cmd端：打开终端，输入scrapy shell https://www.dushu.com/book/1188.html进入scrapy环境，
+from scrapy.linkextractors import LinkExtractor #是链接提取器所在包
+link = LinkExtractor(allow=r'/book/1188_\d+\.html') #使用正则表达式
+link = LinkExtractor(restrict_xpaths=r'//div[@class="pages"]/a[text()!="下一页»"]') #或使用xpath
+#需要注意，虽然链接对应的是a标签的href属性，但restrict_xpaths=参数必须指向元素，也就是直接链接或包含链接的容器，不能是属性。这样写的结果与正则的相同，不会按网页里xpath插件中显示的只提取a标签内容
+link.extract_links(response)#可以查看提取到的链接
+
+pycharm中：用之前方法创建爬虫文件，之后使用scrapy genspider -t crawl dsw www.dushu.com/book/1188.html创建爬虫对象（注意多了-t crawl），启动方式同之前
+1、注意先修改dsw.py中的start_url为https://www.dushu.com/book/1188.html、allowed_domains为www.dushu.com
+2、想爬取各页的书名以及图片，因此需修改items.py，注意scrapy.Field()结尾的括号
+3、观察到有data-original，因此有懒加载。书名和图片链接都在一个img内，所以先创建img_list获取总xpath，再接着它写书名和图片的xpath
+4、先将爬取到的书名和图片保存到json文件中，需启用管道，注意要先到settings.py中取消注释
+5、注意此种用正则作限制的方法会不爬取第一页的数据，因为/book/1188.html不符合正则，因此需将start_url改为https://www.dushu.com/book/1188_1.html，链接提取器会把start_url作为起点开始爬取，之后再爬取提取到的链接
+（或改正则表达式）
+
+将爬取到的数据存入数据库（以MySQL为例）：
+settings.py中添加:
+ITEM_PIPELINES = {
+   'scrapy_dsw.pipelines.ScrapyDswPipeline': 300,
+   'scrapy_dsw.pipelines.MySQLPipeline': 301 #自己创建的用于将数据存入数据库的管道
+}
+db_host = '1.1.1.1' #数据库所在电脑/虚拟机的IP地址，若是本机，直接写localhost:3306
+db_port = 3306 #端口号（一个整数）
+db_user = 'root' #数据库用户名
+db_password = 'xxx' #数据库密码
+db_name = 'spider_1' #想存入库的名称
+db_char_set = "utf8" #字符存储格式，注意不能写中间的-
+#上述参数中端口号和字符格式需要注意
+pipelines.py中添加:
+from scrapy.utils.project import get_project_settings #加载settings文件
+import pymysql
+class MySQLPipeline:
+    def open_spider(self, spider):
+        settings = get_project_settings()
+        self.host = settings['db_host']
+        self.port = settings['db_port']
+        self.user = settings['db_user']
+        self.password = settings['db_password']
+        self.name = settings['db_name']
+        self.char_set = settings['db_char_set']
+        self.connect() #与MySQL建立连接
+    def connect(self):
+        self.conn = pymysql.connect(
+            host=self.host,
+            port=self.port,
+            user=self.user,
+            password=self.password,
+            db=self.name,
+            charset=self.char_set
+        )
+        self.cursor = self.conn.cursor()
+    def process_item(self, item, spider):
+        sql = 'insert into book(name,src) values("{}","{}")'.format(item['name'],item['src']) #直接可以执行MySQL语句
+        self.cursor.execute(sql) #执行语句
+        self.conn.commit() #提交
+        return item
+    def close_spider(self, spider):
+        self.cursor.close()
+        self.conn.close() #关闭连接
+
