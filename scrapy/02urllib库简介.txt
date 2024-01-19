@@ -86,6 +86,7 @@ print(json_content)#此时可输出正常内容
 
 post请求--百度详细翻译
 在检查参数中找到v2transapi?from=en&to=zh，点击“负载/payload”，表单数据里面的内容就是参数，都需要进行传入
+（注意此步骤可能需要用英文输入法输入单词后查看network）
 如果这时候仍然报错，就需要将标头/headers里面的请求标头/request headers中的数据全部作为headers传入（也需写成'xxx':'xxxxx'的格式）
 快速替换：按CTRL+r，上面选择正则表达式，输入 (.*):(.*) ，下面输入 '$1':'$2', ，即可
 有的网站只需要headers中的cookie参数
