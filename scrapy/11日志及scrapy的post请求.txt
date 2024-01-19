@@ -1,0 +1,28 @@
+CRITICAL:严重错误
+ERROR:一般错误
+WARNING:警告
+INFO:一般信息
+DEBUG:调试信息
+默认日志等级为debug。即出现了debug及以上等级的日志，就会打印
+在settings.py中添加:LOG_LEVEL='WARNING'，就可以把日志等级改变，此时再在终端里运行爬虫就不会看到一长串的信息
+在settings.py中添加:LOG_FILE='logdemo.log'，就可以把日志信息转存到这个文件里，注意后缀必须是.log
+正常情况下不会修改日志等级，只会设置日志存储文件
+
+
+按02中的方法对百度翻译进行爬取，选用base_url为http://https://fanyi.baidu.com/v2transapi?from=en&to=zh/
+创建scrapy文件时使用scrapy genspider test_post https://fanyi.baidu.com/v2transapi?from=en"&"to=zh    （&需加双引号）
+因为post请求必须要有参数，所以此时若直接进行爬取会报错，start_urls参数和parse方法失效
+将start_urls参数和parse方法注释掉，在下面重写start_requests方法
+    def start_requests(self):
+        url = ##要爬取的url##
+        data = {
+            ##负载中的表单数据##
+        }
+        yield scrapy.FormRequest(url=url,formdata=data,callback=self.parse_second) #将爬取到的结果返回到parse_second中
+    def parse_second(self,response):
+        content = response.text #获取爬取结果
+        obj = json.loads(content,encoding='utf-8') #将结果json字符串用utf-8进行编码
+        print(obj)
+
+现在的百度翻译爬取需用https://fanyi.baidu.com/v2transapi?from=en"&"to=zh作url，其中表单里的query项是输入的单词，同时sign项必须与query项匹配（若改变query项，sign也改变，且改变的方式未知，即改变query后需在网页上自行查看新的sign）。使爬取难度增大，常规方法无法完成爬取
+
