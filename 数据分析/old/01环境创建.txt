@@ -1,0 +1,20 @@
+下载2.2.2版本的matplotlib包，以及numpy==1.14.2 pandas==0.20.3 tables==3.4.2 jupyter==1.0.0，解释器不能使用3.10版本python，考虑使用3.6版本
+进入https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib下载对应python版本的TA-Lib包
+ 
+在终端中执行jupyter notebook可以进入jupyter notebook界面，是一个网页。注意在使用jupyter notebook时不能关闭终端，在那个文件夹内打开的终端，jupyter的运行（读取文件和创建文件）就在哪个文件夹内。更多操作参考https://zhuanlan.zhihu.com/p/33105153
+
+shift+enter执行本单元格代码，并跳转到下一单元格
+CTRL+enter执行本单元格代码，留在本单元
+对输入框进行操作：默认为编辑模式，按esc或者在框外点一下进入命令模式，可以对这个输入框进行剪切/复制/粘贴/移动等操作，命令模式下按enter或在框内点一下进入编辑模式
+命令模式下按A可以在当前单元格上面添加一个单元格，B在下面添加，双击D删除当前单元格
+编辑模式下CTRL+z撤销，注释CTRL+/，补全用tab
+单元格前有*代表代码正在运行
+
+进入markdown模式：选中要markdown的单元格，将屏幕上方的“代码”选项框改成标注（Markdown）模式，输入内容后运行单元格就可
+# 一级标题
+## 二级标题
+### 三级标题（以此类推）
+- 一级缩进
+    - 二级缩进（按tab后再输入-）
+        - 三级缩进
+注意#和-后都要跟一个空格
